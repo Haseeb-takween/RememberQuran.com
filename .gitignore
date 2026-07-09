@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# local reference clones (not part of the app)
+/.ref/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

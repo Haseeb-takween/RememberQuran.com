@@ -1,3 +1,5 @@
-export default function Home() {
-  return <h1>hello world</h1>;
+import { SurahListPage } from "@/components/surah-list/SurahListPage"
+
+export default function HomePage() {
+  return <SurahListPage />
 }
