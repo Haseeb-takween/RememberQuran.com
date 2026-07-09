@@ -1,0 +1,129 @@
+"use client"
+
+import { useState } from "react"
+import { Play, Bookmark, Copy, Share2, MoreHorizontal, Check } from "lucide-react"
+import type { Verse } from "@/types/quran"
+import type { DisplayMode } from "@/context/ReaderSettingsContext"
+import { ArabicLine } from "./ArabicLine"
+import { TranslationBlock } from "./TranslationBlock"
+import { cn } from "@/lib/utils"
+
+interface AyahBlockProps {
+  verse: Verse
+  displayMode: DisplayMode
+  activeTranslationIds: number[]
+  showTranslation: boolean
+  isTarget?: boolean
+}
+
+const metaBtn = cn(
+  "flex size-7 items-center justify-center rounded-md",
+  "text-muted-foreground/50 transition-colors duration-[120ms]",
+  "hover:bg-accent hover:text-foreground",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+  "disabled:opacity-30 disabled:pointer-events-none",
+)
+
+export function AyahBlock({
+  verse,
+  displayMode,
+  activeTranslationIds,
+  showTranslation,
+  isTarget = false,
+}: AyahBlockProps) {
+  const [copied, setCopied] = useState(false)
+
+  const activeTranslations = verse.translations.filter((t) =>
+    activeTranslationIds.includes(t.resource_id),
+  )
+
+  function copyAyah() {
+    const arabic = verse.text_uthmani
+    const trans = activeTranslations.map((t) => t.text).join("\n\n")
+    const ref = `[${verse.verse_key}]`
+    navigator.clipboard
+      .writeText([arabic, trans, ref].filter(Boolean).join("\n\n"))
+      .catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  async function shareAyah() {
+    const [surahId, ayahId] = verse.verse_key.split(":")
+    const url = `${window.location.origin}/${surahId}/${ayahId}`
+    if (navigator.share) {
+      await navigator.share({ url, title: `Quran ${verse.verse_key}` }).catch(() => {})
+    } else {
+      navigator.clipboard.writeText(url).catch(() => {})
+    }
+  }
+
+  /* Reading mode is handled by ReadingModeView — this is verse-by-verse only */
+  if (displayMode === "reading") {
+    return (
+      <div
+        id={`ayah-${verse.verse_number}`}
+        className={cn(
+          "scroll-mt-28 py-1 transition-colors duration-[1500ms]",
+          isTarget && "bg-primary/5",
+        )}
+      >
+        <ArabicLine words={verse.words} showEndGlyph />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      id={`ayah-${verse.verse_number}`}
+      data-slot="study-panel"
+      data-verse-key={verse.verse_key}
+      className={cn(
+        "scroll-mt-28 px-1 py-7 transition-colors duration-[1500ms]",
+        isTarget && "bg-primary/5",
+      )}
+    >
+      {/* Meta bar — quran.com TranslationView TopActions pattern */}
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <span className="min-w-[2.75rem] text-sm font-medium tabular-nums text-muted-foreground/80">
+            {verse.verse_key}
+          </span>
+          <button type="button" disabled title="Play (Milestone 2)" className={metaBtn}>
+            <Play className="size-3.5" strokeWidth={1.75} />
+          </button>
+          <button type="button" disabled title="Bookmark (Milestone 4)" className={metaBtn}>
+            <Bookmark className="size-3.5" strokeWidth={1.75} />
+          </button>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            title={copied ? "Copied!" : "Copy ayah"}
+            onClick={copyAyah}
+            className={cn(metaBtn, copied && "text-primary")}
+          >
+            {copied ? (
+              <Check className="size-3.5" strokeWidth={2} />
+            ) : (
+              <Copy className="size-3.5" strokeWidth={1.75} />
+            )}
+          </button>
+          <button type="button" title="Share" onClick={shareAyah} className={metaBtn}>
+            <Share2 className="size-3.5" strokeWidth={1.75} />
+          </button>
+          <button type="button" title="More options" className={metaBtn}>
+            <MoreHorizontal className="size-3.5" strokeWidth={1.75} />
+          </button>
+        </div>
+      </div>
+
+      <ArabicLine words={verse.words} />
+
+      {showTranslation &&
+        activeTranslations.map((t) => (
+          <TranslationBlock key={t.resource_id} translation={t} />
+        ))}
+    </div>
+  )
+}
