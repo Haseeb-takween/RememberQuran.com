@@ -1,6 +1,7 @@
 "use client"
 
 import { Minus, Plus } from "lucide-react"
+import type { ReactNode } from "react"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import {
   FONT_SCALE_LABELS,
@@ -15,78 +16,60 @@ const FOCUS =
 
 function ScaleControl({
   label,
+  hint,
+  preview,
   value,
   onDecrease,
   onIncrease,
-  onSet,
 }: {
   label: string
+  hint: string
+  preview: ReactNode
   value: FontScale
   onDecrease: () => void
   onIncrease: () => void
-  onSet: (n: FontScale) => void
 }) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-        <span className="text-xs tabular-nums text-muted-foreground">
+    <div className="rounded-md border border-border/70 bg-muted/30 px-3 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">{label}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>
+        </div>
+        <span className="shrink-0 rounded-md bg-background px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground ring-1 ring-border/60">
           {FONT_SCALE_LABELS[value]}
         </span>
       </div>
-      <div className="flex items-center gap-2">
+
+      <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
           aria-label={`Decrease ${label}`}
           disabled={value <= MIN_FONT_SCALE}
           onClick={onDecrease}
           className={cn(
-            "flex size-8 items-center justify-center rounded-md border border-border",
+            "flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background",
             "text-muted-foreground hover:bg-accent hover:text-foreground",
-            "disabled:opacity-30 disabled:pointer-events-none",
+            "disabled:pointer-events-none disabled:opacity-30",
             FOCUS,
           )}
         >
           <Minus className="size-3.5" strokeWidth={1.75} />
         </button>
-        <div
-          role="group"
-          aria-label={label}
-          className="flex flex-1 justify-between gap-0.5 rounded-lg bg-muted p-0.5"
-        >
-          {([1, 2, 3, 4, 5, 6] as FontScale[]).map((step) => {
-            const active = value === step
-            return (
-              <button
-                key={step}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onSet(step)}
-                className={cn(
-                  "flex-1 rounded-md py-1 text-[10px] font-medium tabular-nums",
-                  "transition-colors duration-[120ms]",
-                  FOCUS,
-                  active
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground/80",
-                )}
-              >
-                {FONT_SCALE_LABELS[step]}
-              </button>
-            )
-          })}
+
+        <div className="flex min-h-10 flex-1 items-center justify-center overflow-hidden rounded-md border border-border/60 bg-background px-3">
+          {preview}
         </div>
+
         <button
           type="button"
           aria-label={`Increase ${label}`}
           disabled={value >= MAX_FONT_SCALE}
           onClick={onIncrease}
           className={cn(
-            "flex size-8 items-center justify-center rounded-md border border-border",
+            "flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background",
             "text-muted-foreground hover:bg-accent hover:text-foreground",
-            "disabled:opacity-30 disabled:pointer-events-none",
+            "disabled:pointer-events-none disabled:opacity-30",
             FOCUS,
           )}
         >
@@ -101,8 +84,9 @@ export function FontSizeSelector() {
   const {
     arabicFontScale,
     translationFontScale,
-    setArabicFontScale,
-    setTranslationFontScale,
+    arabicFontSize,
+    translationFontSize,
+    arabicFontFamily,
     increaseArabicFontScale,
     decreaseArabicFontScale,
     increaseTranslationFontScale,
@@ -110,20 +94,41 @@ export function FontSizeSelector() {
   } = useReaderSettings()
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <ScaleControl
-        label="Arabic text"
+        label="Arabic size"
+        hint="Script size for ayah text"
         value={arabicFontScale}
         onDecrease={decreaseArabicFontScale}
         onIncrease={increaseArabicFontScale}
-        onSet={setArabicFontScale}
+        preview={
+          <span
+            className="truncate leading-none text-foreground"
+            dir="rtl"
+            lang="ar"
+            style={{
+              fontFamily: arabicFontFamily,
+              fontSize: `calc(${arabicFontSize} * 0.55)`,
+            }}
+          >
+            بِسْمِ ٱللَّهِ
+          </span>
+        }
       />
       <ScaleControl
-        label="Translation"
+        label="Translation size"
+        hint="English meaning under each ayah"
         value={translationFontScale}
         onDecrease={decreaseTranslationFontScale}
         onIncrease={increaseTranslationFontScale}
-        onSet={setTranslationFontScale}
+        preview={
+          <span
+            className="truncate font-serif text-foreground"
+            style={{ fontSize: translationFontSize }}
+          >
+            In the name of Allah
+          </span>
+        }
       />
     </div>
   )

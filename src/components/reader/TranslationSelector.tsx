@@ -1,45 +1,72 @@
 "use client"
 
-import { motion } from "motion/react"
+import { BookOpen, Languages } from "lucide-react"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
-import { TRANSLATION_IDS } from "@/lib/quranApi"
+import { TRANSLATION_IDS, TRANSLATION_NAMES } from "@/lib/quranApi"
 import { cn } from "@/lib/utils"
 
 type TMode = "none" | "si" | "cq" | "both"
 
-const OPTIONS: { value: TMode; label: string }[] = [
-  { value: "none", label: "Arabic" },
-  { value: "si",   label: "+SI" },
-  { value: "cq",   label: "+CQ" },
-  { value: "both", label: "+Both" },
+const OPTIONS: {
+  value: TMode
+  label: string
+  description: string
+}[] = [
+  {
+    value: "none",
+    label: "Arabic only",
+    description: "Hide translations while you read",
+  },
+  {
+    value: "si",
+    label: TRANSLATION_NAMES[TRANSLATION_IDS.SAHEEH_INTERNATIONAL],
+    description: "Clear, widely used English rendering",
+  },
+  {
+    value: "cq",
+    label: "The Clear Quran",
+    description: "Modern English by Dr Mustafa Khattab",
+  },
+  {
+    value: "both",
+    label: "Both translations",
+    description: "Compare Saheeh International and Clear Quran",
+  },
 ]
 
-const SPRING = { type: "spring" as const, stiffness: 500, damping: 40 }
-
-function getModeFromSettings(showTranslation: boolean, activeTranslations: number[]): TMode {
+function getMode(showTranslation: boolean, activeTranslations: number[]): TMode {
   if (!showTranslation || activeTranslations.length === 0) return "none"
-  if (activeTranslations.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) && activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
+  if (
+    activeTranslations.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) &&
+    activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)
+  ) {
+    return "both"
+  }
   if (activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "cq"
   return "si"
 }
 
 export function TranslationSelector() {
-  const { showTranslation, activeTranslations, setShowTranslation, setActiveTranslations } =
-    useReaderSettings()
+  const {
+    showTranslation,
+    activeTranslations,
+    setShowTranslation,
+    setActiveTranslations,
+  } = useReaderSettings()
 
-  const currentMode = getModeFromSettings(showTranslation, activeTranslations)
+  const currentMode = getMode(showTranslation, activeTranslations)
 
   function handleSelect(mode: TMode) {
     if (mode === "none") {
       setShowTranslation(false)
-    } else if (mode === "si") {
-      setShowTranslation(true)
+      return
+    }
+    setShowTranslation(true)
+    if (mode === "si") {
       setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
     } else if (mode === "cq") {
-      setShowTranslation(true)
       setActiveTranslations([TRANSLATION_IDS.CLEAR_QURAN])
     } else {
-      setShowTranslation(true)
       setActiveTranslations([
         TRANSLATION_IDS.SAHEEH_INTERNATIONAL,
         TRANSLATION_IDS.CLEAR_QURAN,
@@ -49,33 +76,57 @@ export function TranslationSelector() {
 
   return (
     <div
-      role="group"
+      role="radiogroup"
       aria-label="Translation"
-      className="flex rounded-lg bg-muted p-0.5"
+      className="grid grid-cols-1 gap-1.5"
     >
-      {OPTIONS.map(({ value, label }) => {
+      {OPTIONS.map(({ value, label, description }) => {
         const active = currentMode === value
+        const Icon = value === "none" ? BookOpen : Languages
         return (
           <button
             key={value}
             type="button"
-            aria-pressed={active}
+            role="radio"
+            aria-checked={active}
             onClick={() => handleSelect(value)}
             className={cn(
-              "relative rounded-md px-3 py-1 text-xs font-medium",
-              "transition-colors duration-[120ms] ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              active ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
+              "flex w-full items-start gap-3 rounded-md px-2.5 py-2.5 text-left",
+              "transition-colors duration-[120ms]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              active
+                ? "bg-primary/10 text-primary"
+                : "text-foreground hover:bg-accent",
             )}
           >
-            {active && (
-              <motion.span
-                layoutId="translation-pill"
-                className="absolute inset-0 z-[-1] rounded-md bg-background shadow-sm"
-                transition={SPRING}
-              />
-            )}
-            {label}
+            <span
+              className={cn(
+                "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border",
+                active
+                  ? "border-primary/25 bg-primary/10"
+                  : "border-border bg-muted/60 text-muted-foreground",
+              )}
+            >
+              <Icon className="size-3.5" strokeWidth={1.75} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">{label}</span>
+              <span
+                className={cn(
+                  "mt-0.5 block text-[11px] leading-snug",
+                  active ? "text-primary/75" : "text-muted-foreground",
+                )}
+              >
+                {description}
+              </span>
+            </span>
+            <span
+              className={cn(
+                "mt-1 size-1.5 shrink-0 rounded-full",
+                active ? "bg-primary" : "border border-muted-foreground/40",
+              )}
+              aria-hidden="true"
+            />
           </button>
         )
       })}

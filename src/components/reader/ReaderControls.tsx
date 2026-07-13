@@ -5,9 +5,6 @@ import Link from "next/link"
 import {
   ChevronLeft,
   ChevronRight,
-  Languages,
-  AlignLeft,
-  LayoutList,
   Bookmark,
   Play,
   Settings2,
@@ -16,16 +13,13 @@ import {
   Maximize,
   Minimize,
 } from "lucide-react"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { useUI } from "@/context/UIContext"
-import { TRANSLATION_IDS, TRANSLATION_NAMES } from "@/lib/quranApi"
 import { ReaderSettingsPanel } from "./ReaderSettingsPanel"
 import type { Chapter } from "@/types/quran"
 import { cn } from "@/lib/utils"
@@ -42,31 +36,7 @@ const iconBtn = cn(
   "disabled:opacity-30 disabled:pointer-events-none",
 )
 
-type TMode = "none" | "si" | "cq" | "both"
-
-function getMode(show: boolean, active: number[]): TMode {
-  if (!show || active.length === 0) return "none"
-  if (active.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) && active.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
-  if (active.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "cq"
-  return "si"
-}
-
-const TRANSLATION_ROWS: { mode: TMode; label: string }[] = [
-  { mode: "none", label: "Arabic only" },
-  { mode: "si",   label: TRANSLATION_NAMES[TRANSLATION_IDS.SAHEEH_INTERNATIONAL] },
-  { mode: "cq",   label: "The Clear Quran" },
-  { mode: "both", label: "Both translations" },
-]
-
 export function ReaderControls({ chapter }: ReaderControlsProps) {
-  const {
-    displayMode,
-    setDisplayMode,
-    showTranslation,
-    activeTranslations,
-    setShowTranslation,
-    setActiveTranslations,
-  } = useReaderSettings()
   const { sidebarOpen, toggleSidebar } = useUI()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -90,31 +60,11 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
   const id = chapter.id
   const prevId = id > 1 ? id - 1 : null
   const nextId = id < 114 ? id + 1 : null
-  const currentMode = getMode(showTranslation, activeTranslations)
-
-  function applyMode(mode: TMode) {
-    if (mode === "none") {
-      setShowTranslation(false)
-    } else if (mode === "si") {
-      setShowTranslation(true)
-      setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
-    } else if (mode === "cq") {
-      setShowTranslation(true)
-      setActiveTranslations([TRANSLATION_IDS.CLEAR_QURAN])
-    } else {
-      setShowTranslation(true)
-      setActiveTranslations([
-        TRANSLATION_IDS.SAHEEH_INTERNATIONAL,
-        TRANSLATION_IDS.CLEAR_QURAN,
-      ])
-    }
-  }
 
   return (
     <>
       <div className="sticky top-14 z-30 border-b border-border/50 bg-background/98 backdrop-blur-sm">
         <div className="flex h-11 items-center justify-between gap-2 px-3 sm:px-4">
-          {/* Sidebar toggle — desktop surah reader only */}
           <div className="flex min-w-0 items-center gap-0.5">
             <button
               type="button"
@@ -180,78 +130,6 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5">
-            <Popover>
-              <PopoverTrigger title="Translation" className={cn(iconBtn, "hidden sm:flex")}>
-                <Languages className="size-4" strokeWidth={1.75} />
-              </PopoverTrigger>
-              <PopoverContent side="bottom" align="end" sideOffset={8} className="w-52 p-1">
-                <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Translation
-                </p>
-                {TRANSLATION_ROWS.map(({ mode, label }) => {
-                  const active = currentMode === mode
-                  return (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() => applyMode(mode)}
-                      className={cn(
-                        "flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-sm",
-                        "transition-colors duration-[120ms]",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        active
-                          ? "bg-primary/10 font-medium text-primary"
-                          : "text-foreground hover:bg-accent",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "size-1.5 shrink-0 rounded-full",
-                          active ? "bg-primary" : "border border-muted-foreground/40",
-                        )}
-                      />
-                      {label}
-                    </button>
-                  )
-                })}
-              </PopoverContent>
-            </Popover>
-
-            <div className="ml-0.5 hidden items-center gap-px rounded-md border border-border/60 p-0.5 sm:flex">
-              <button
-                type="button"
-                title="Verse by verse"
-                aria-pressed={displayMode === "verse"}
-                onClick={() => setDisplayMode("verse")}
-                className={cn(
-                  "flex size-7 items-center justify-center rounded-sm transition-colors duration-[120ms]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                  displayMode === "verse"
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <LayoutList className="size-3.5" strokeWidth={1.75} />
-              </button>
-              <button
-                type="button"
-                title="Reading mode"
-                aria-pressed={displayMode === "reading"}
-                onClick={() => setDisplayMode("reading")}
-                className={cn(
-                  "flex size-7 items-center justify-center rounded-sm transition-colors duration-[120ms]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                  displayMode === "reading"
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <AlignLeft className="size-3.5" strokeWidth={1.75} />
-              </button>
-            </div>
-
-            <div className="mx-1 hidden h-4 w-px bg-border/50 sm:block" aria-hidden="true" />
-
             <button type="button" title="Bookmark (coming soon)" disabled className={iconBtn}>
               <Bookmark className="size-4" strokeWidth={1.75} />
             </button>
@@ -292,7 +170,7 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
           <SheetHeader>
             <SheetTitle>Reading settings</SheetTitle>
           </SheetHeader>
-          <div className="mt-4 px-1 pb-6">
+          <div className="mt-5 px-1 pb-8">
             <ReaderSettingsPanel />
           </div>
         </SheetContent>
