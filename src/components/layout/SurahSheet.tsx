@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useUI } from "@/context/UIContext"
 import { SurahList } from "./SurahList"
@@ -9,8 +11,20 @@ interface SurahSheetProps {
   chapters: Chapter[]
 }
 
+function isSurahPath(pathname: string) {
+  return /^\/\d+/.test(pathname)
+}
+
 export function SurahSheet({ chapters }: SurahSheetProps) {
+  const pathname = usePathname()
   const { mobileNavOpen, setMobileNavOpen } = useUI()
+
+  // Home already lists every surah — close the sheet if we leave the reader
+  useEffect(() => {
+    if (!isSurahPath(pathname)) {
+      setMobileNavOpen(false)
+    }
+  }, [pathname, setMobileNavOpen])
 
   return (
     <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>

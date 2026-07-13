@@ -5,7 +5,7 @@ import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { TRANSLATION_IDS, TRANSLATION_NAMES } from "@/lib/quranApi"
 import { cn } from "@/lib/utils"
 
-type TMode = "none" | "si" | "cq" | "both"
+type TMode = "none" | "si" | "both"
 
 const OPTIONS: {
   value: TMode
@@ -23,14 +23,9 @@ const OPTIONS: {
     description: "Clear, widely used English rendering",
   },
   {
-    value: "cq",
-    label: "The Clear Quran",
-    description: "Modern English by Dr Mustafa Khattab",
-  },
-  {
     value: "both",
     label: "Both translations",
-    description: "Compare Saheeh International and Clear Quran",
+    description: "Saheeh International and The Clear Quran",
   },
 ]
 
@@ -42,7 +37,8 @@ function getMode(showTranslation: boolean, activeTranslations: number[]): TMode 
   ) {
     return "both"
   }
-  if (activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "cq"
+  // Legacy Clear-Quran-only → treat as both (option removed)
+  if (activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
   return "si"
 }
 
@@ -64,8 +60,6 @@ export function TranslationSelector() {
     setShowTranslation(true)
     if (mode === "si") {
       setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
-    } else if (mode === "cq") {
-      setActiveTranslations([TRANSLATION_IDS.CLEAR_QURAN])
     } else {
       setActiveTranslations([
         TRANSLATION_IDS.SAHEEH_INTERNATIONAL,

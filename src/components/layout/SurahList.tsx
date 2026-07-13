@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "motion/react"
@@ -22,6 +22,7 @@ export function SurahList({
 }: SurahListProps) {
   const pathname = usePathname()
   const [query, setQuery] = useState("")
+  const activeRef = useRef<HTMLAnchorElement>(null)
 
   const activeSurahId = (() => {
     const match = pathname.match(/^\/(\d+)/)
@@ -39,6 +40,11 @@ export function SurahList({
         c.translated_name.name.toLowerCase().includes(q),
     )
   }, [chapters, query])
+
+  useEffect(() => {
+    if (!activeSurahId || query) return
+    activeRef.current?.scrollIntoView({ block: "center", behavior: "instant" })
+  }, [activeSurahId, query])
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -60,7 +66,6 @@ export function SurahList({
         </div>
       )}
 
-      {/* Native overflow so the full 114-surah list is always scrollable */}
       <nav
         aria-label="Surahs"
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
@@ -83,6 +88,7 @@ export function SurahList({
                   )}
                 </AnimatePresence>
                 <Link
+                  ref={isActive ? activeRef : undefined}
                   href={`/${chapter.id}`}
                   onClick={onNavigate}
                   className={cn(
