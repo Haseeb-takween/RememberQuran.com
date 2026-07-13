@@ -6,9 +6,9 @@ export async function SurahListPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-10 text-center">
+      <header className="mb-10 flex flex-col items-center gap-3 text-center">
         <p
-          className="font-uthmani mb-3 text-5xl leading-[1.6] text-foreground/75 sm:text-6xl"
+          className="font-uthmani text-5xl leading-[1.6] text-foreground/75 sm:text-6xl"
           dir="rtl"
           lang="ar"
         >
@@ -17,10 +17,11 @@ export async function SurahListPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           RememberQuran
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Read the Arabic text, explore meanings, and study translations — free for everyone.
+        <p className="max-w-xl text-sm text-muted-foreground">
+          Read the Arabic text, explore meanings, and study translations — free
+          for everyone.
         </p>
-        <p className="mt-3 text-xs tabular-nums text-muted-foreground/70">
+        <p className="text-xs tabular-nums text-muted-foreground/70">
           114 Surahs
         </p>
       </header>

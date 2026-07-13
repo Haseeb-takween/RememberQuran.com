@@ -42,16 +42,19 @@ const iconBtn = cn(
   "disabled:opacity-30 disabled:pointer-events-none",
 )
 
-type TMode = "none" | "one" | "both"
+type TMode = "none" | "si" | "cq" | "both"
 
 function getMode(show: boolean, active: number[]): TMode {
-  if (!show) return "none"
-  return active.length >= 2 ? "both" : "one"
+  if (!show || active.length === 0) return "none"
+  if (active.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) && active.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
+  if (active.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "cq"
+  return "si"
 }
 
 const TRANSLATION_ROWS: { mode: TMode; label: string }[] = [
   { mode: "none", label: "Arabic only" },
-  { mode: "one", label: TRANSLATION_NAMES[TRANSLATION_IDS.SAHEEH_INTERNATIONAL] },
+  { mode: "si",   label: TRANSLATION_NAMES[TRANSLATION_IDS.SAHEEH_INTERNATIONAL] },
+  { mode: "cq",   label: "The Clear Quran" },
   { mode: "both", label: "Both translations" },
 ]
 
@@ -92,9 +95,12 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
   function applyMode(mode: TMode) {
     if (mode === "none") {
       setShowTranslation(false)
-    } else if (mode === "one") {
+    } else if (mode === "si") {
       setShowTranslation(true)
       setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
+    } else if (mode === "cq") {
+      setShowTranslation(true)
+      setActiveTranslations([TRANSLATION_IDS.CLEAR_QURAN])
     } else {
       setShowTranslation(true)
       setActiveTranslations([
@@ -174,16 +180,6 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5">
-            {/* Quick Aa opens full settings on mobile; desktop uses settings sheet */}
-            <button
-              type="button"
-              title="Reading settings"
-              onClick={() => setSettingsOpen(true)}
-              className={cn(iconBtn, "w-auto px-1.5 text-[13px] font-semibold tracking-tight")}
-            >
-              Aa
-            </button>
-
             <Popover>
               <PopoverTrigger title="Translation" className={cn(iconBtn, "hidden sm:flex")}>
                 <Languages className="size-4" strokeWidth={1.75} />

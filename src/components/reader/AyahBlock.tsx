@@ -5,6 +5,7 @@ import { Play, Bookmark, Copy, Share2, MoreHorizontal, Check } from "lucide-reac
 import type { Verse } from "@/types/quran"
 import type { DisplayMode } from "@/context/ReaderSettingsContext"
 import { ArabicLine } from "./ArabicLine"
+import { AyahNumber } from "./AyahNumber"
 import { TranslationBlock } from "./TranslationBlock"
 import { cn } from "@/lib/utils"
 
@@ -86,9 +87,7 @@ export function AyahBlock({
       {/* Meta bar — quran.com TranslationView TopActions pattern */}
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <span className="min-w-[2.75rem] text-sm font-medium tabular-nums text-muted-foreground/80">
-            {verse.verse_key}
-          </span>
+          <AyahNumber number={verse.verse_number} />
           <button type="button" disabled title="Play (Milestone 2)" className={metaBtn}>
             <Play className="size-3.5" strokeWidth={1.75} />
           </button>

@@ -5,19 +5,22 @@ import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { TRANSLATION_IDS } from "@/lib/quranApi"
 import { cn } from "@/lib/utils"
 
-type TMode = "none" | "one" | "both"
+type TMode = "none" | "si" | "cq" | "both"
 
 const OPTIONS: { value: TMode; label: string }[] = [
   { value: "none", label: "Arabic" },
-  { value: "one", label: "+SI" },
+  { value: "si",   label: "+SI" },
+  { value: "cq",   label: "+CQ" },
   { value: "both", label: "+Both" },
 ]
 
 const SPRING = { type: "spring" as const, stiffness: 500, damping: 40 }
 
 function getModeFromSettings(showTranslation: boolean, activeTranslations: number[]): TMode {
-  if (!showTranslation) return "none"
-  return activeTranslations.length >= 2 ? "both" : "one"
+  if (!showTranslation || activeTranslations.length === 0) return "none"
+  if (activeTranslations.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) && activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
+  if (activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "cq"
+  return "si"
 }
 
 export function TranslationSelector() {
@@ -29,9 +32,12 @@ export function TranslationSelector() {
   function handleSelect(mode: TMode) {
     if (mode === "none") {
       setShowTranslation(false)
-    } else if (mode === "one") {
+    } else if (mode === "si") {
       setShowTranslation(true)
       setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
+    } else if (mode === "cq") {
+      setShowTranslation(true)
+      setActiveTranslations([TRANSLATION_IDS.CLEAR_QURAN])
     } else {
       setShowTranslation(true)
       setActiveTranslations([

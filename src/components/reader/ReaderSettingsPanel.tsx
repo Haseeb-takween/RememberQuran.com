@@ -7,16 +7,19 @@ import { TRANSLATION_IDS, TRANSLATION_NAMES } from "@/lib/quranApi"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { cn } from "@/lib/utils"
 
-type TMode = "none" | "one" | "both"
+type TMode = "none" | "si" | "cq" | "both"
 
 function getMode(show: boolean, active: number[]): TMode {
-  if (!show) return "none"
-  return active.length >= 2 ? "both" : "one"
+  if (!show || active.length === 0) return "none"
+  if (active.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) && active.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
+  if (active.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "cq"
+  return "si"
 }
 
 const TRANSLATION_ROWS: { mode: TMode; label: string }[] = [
   { mode: "none", label: "Arabic only" },
-  { mode: "one", label: TRANSLATION_NAMES[TRANSLATION_IDS.SAHEEH_INTERNATIONAL] },
+  { mode: "si",   label: TRANSLATION_NAMES[TRANSLATION_IDS.SAHEEH_INTERNATIONAL] },
+  { mode: "cq",   label: "The Clear Quran" },
   { mode: "both", label: "Both translations" },
 ]
 
@@ -33,9 +36,12 @@ export function ReaderSettingsPanel() {
   function applyMode(mode: TMode) {
     if (mode === "none") {
       setShowTranslation(false)
-    } else if (mode === "one") {
+    } else if (mode === "si") {
       setShowTranslation(true)
       setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
+    } else if (mode === "cq") {
+      setShowTranslation(true)
+      setActiveTranslations([TRANSLATION_IDS.CLEAR_QURAN])
     } else {
       setShowTranslation(true)
       setActiveTranslations([
