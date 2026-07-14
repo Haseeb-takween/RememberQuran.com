@@ -2,6 +2,7 @@
 
 import type { Verse } from "@/types/quran"
 import { ArabicWord } from "./ArabicWord"
+import { AyahEndMarker } from "./AyahEndMarker"
 import { TranslationBlock } from "./TranslationBlock"
 import { cn } from "@/lib/utils"
 
@@ -47,13 +48,11 @@ export function ReadingModeView({
             >
               {words.map((word, i) =>
                 word.char_type_name === "end" ? (
-                  <span
+                  <AyahEndMarker
                     key={word.id}
-                    className="mx-1 inline-block text-[0.65em] text-muted-foreground/55"
-                    aria-label={`Ayah ${verse.verse_number}`}
-                  >
-                    {word.qpc_uthmani_hafs || word.text_uthmani}
-                  </span>
+                    digits={word.qpc_uthmani_hafs || word.text_uthmani}
+                    ariaLabel={`Ayah ${verse.verse_number}`}
+                  />
                 ) : (
                   <span key={word.id}>
                     <ArabicWord word={word} />

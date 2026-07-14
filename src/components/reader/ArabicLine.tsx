@@ -1,12 +1,13 @@
 import type { Word } from "@/types/quran"
 import { ArabicWord } from "./ArabicWord"
+import { AyahEndMarker } from "./AyahEndMarker"
 
 interface ArabicLineProps {
   words: Word[]
   showEndGlyph?: boolean
 }
 
-export function ArabicLine({ words, showEndGlyph = false }: ArabicLineProps) {
+export function ArabicLine({ words, showEndGlyph = true }: ArabicLineProps) {
   const visibleWords = (words ?? []).filter(
     (w) =>
       w.char_type_name === "word" ||
@@ -18,9 +19,7 @@ export function ArabicLine({ words, showEndGlyph = false }: ArabicLineProps) {
       {visibleWords.map((word, i) => (
         <span key={word.id}>
           {word.char_type_name === "end" ? (
-            <span className="mx-1 inline-block text-[0.65em] text-muted-foreground/50">
-              {word.qpc_uthmani_hafs || word.text_uthmani}
-            </span>
+            <AyahEndMarker digits={word.qpc_uthmani_hafs || word.text_uthmani} />
           ) : (
             <ArabicWord word={word} />
           )}
