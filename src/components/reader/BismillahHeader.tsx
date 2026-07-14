@@ -7,7 +7,7 @@ export function BismillahHeader() {
         lang="ar"
         style={{ fontSize: "1.85rem" }}
       >
-        بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+        بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
       </p>
     </div>
   )

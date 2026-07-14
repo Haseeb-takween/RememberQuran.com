@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { amiri, sourceSerif4 } from "@/lib/fonts"
+import { amiri, amiriQuran, sourceSerif4 } from "@/lib/fonts"
 import { getChapters } from "@/lib/quranApi"
 import Providers from "@/components/providers"
 import { Navbar } from "@/components/layout/Navbar"
@@ -38,7 +38,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${amiri.variable} ${sourceSerif4.variable} h-full`}
+      className={`${amiri.variable} ${amiriQuran.variable} ${sourceSerif4.variable} h-full`}
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-background text-foreground antialiased">

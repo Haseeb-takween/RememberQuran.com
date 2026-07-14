@@ -19,7 +19,7 @@ export function ArabicLine({ words, showEndGlyph = false }: ArabicLineProps) {
         <span key={word.id}>
           {word.char_type_name === "end" ? (
             <span className="mx-1 inline-block text-[0.65em] text-muted-foreground/50">
-              {word.text_uthmani}
+              {word.qpc_uthmani_hafs || word.text_uthmani}
             </span>
           ) : (
             <ArabicWord word={word} />

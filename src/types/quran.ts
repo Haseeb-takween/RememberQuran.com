@@ -29,6 +29,8 @@ export interface Word {
   audio_url: string | null
   char_type_name: WordCharType
   text_uthmani: string
+  /** QPC Hafs encoding — matches the KFGQPC UthmanicHafs font */
+  qpc_uthmani_hafs?: string
   translation: WordTranslation
   transliteration?: WordTranslation
 }
@@ -46,6 +48,8 @@ export interface Verse {
   juz_number: number
   hizb_number: number
   text_uthmani: string
+  /** QPC Hafs encoding — matches the KFGQPC UthmanicHafs font */
+  qpc_uthmani_hafs?: string
   words: Word[]
   translations: VerseTranslation[]
 }

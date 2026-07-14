@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
-import { DEFAULT_TRANSLATIONS } from "@/lib/quranApi"
+import { DEFAULT_TRANSLATIONS, TRANSLATION_IDS } from "@/lib/quranApi"
 import {
   type QuranFont,
   type FontScale,
@@ -72,6 +72,25 @@ function clampScale(n: number): FontScale {
   return Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, n)) as FontScale
 }
 
+/**
+ * Pre-QA-fix builds stored transliteration id 57 as part of the default pair
+ * (131 + 57, both mislabeled). 57 present → user had the old default; reset
+ * to the corrected pair. Otherwise keep only ids we can actually serve.
+ */
+function migrateActiveTranslations(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return DEFAULT_TRANSLATIONS
+  const ids = raw.filter((id): id is number => typeof id === "number")
+  if (ids.includes(57)) return DEFAULT_TRANSLATIONS
+  const valid = ids.filter(
+    (id) =>
+      id === TRANSLATION_IDS.SAHEEH_INTERNATIONAL ||
+      id === TRANSLATION_IDS.CLEAR_QURAN,
+  )
+  // Non-empty selection of now-unknown ids → fall back to defaults
+  if (ids.length > 0 && valid.length === 0) return DEFAULT_TRANSLATIONS
+  return valid
+}
+
 function migrateSettings(raw: unknown): ReaderSettings {
   if (!raw || typeof raw !== "object") return DEFAULT_SETTINGS
   const s = raw as Record<string, unknown>
@@ -105,9 +124,7 @@ function migrateSettings(raw: unknown): ReaderSettings {
     arabicFontScale,
     translationFontScale,
     displayMode,
-    activeTranslations: Array.isArray(s.activeTranslations)
-      ? (s.activeTranslations as number[])
-      : DEFAULT_SETTINGS.activeTranslations,
+    activeTranslations: migrateActiveTranslations(s.activeTranslations),
     showTranslation:
       typeof s.showTranslation === "boolean"
         ? s.showTranslation

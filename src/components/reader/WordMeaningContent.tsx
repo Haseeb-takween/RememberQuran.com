@@ -8,7 +8,7 @@ export function WordMeaningContent({ word }: { word: Word }) {
         dir="rtl"
         lang="ar"
       >
-        {word.text_uthmani}
+        {word.qpc_uthmani_hafs || word.text_uthmani}
       </span>
       <span className="text-xs leading-snug">
         {word.translation.text}

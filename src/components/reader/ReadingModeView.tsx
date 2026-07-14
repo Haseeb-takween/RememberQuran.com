@@ -52,7 +52,7 @@ export function ReadingModeView({
                     className="mx-1 inline-block text-[0.65em] text-muted-foreground/55"
                     aria-label={`Ayah ${verse.verse_number}`}
                   >
-                    {word.text_uthmani}
+                    {word.qpc_uthmani_hafs || word.text_uthmani}
                   </span>
                 ) : (
                   <span key={word.id}>

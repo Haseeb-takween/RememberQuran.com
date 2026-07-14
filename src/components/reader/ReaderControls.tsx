@@ -20,6 +20,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { useUI } from "@/context/UIContext"
+import { AyahSelector } from "./AyahSelector"
 import { ReaderSettingsPanel } from "./ReaderSettingsPanel"
 import type { Chapter } from "@/types/quran"
 import { cn } from "@/lib/utils"
@@ -127,6 +128,10 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
                 <ChevronRight className="size-4" strokeWidth={1.75} />
               </span>
             )}
+
+            <div className="mx-1 h-4 w-px bg-border/50" aria-hidden="true" />
+
+            <AyahSelector surahId={id} versesCount={chapter.verses_count} />
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5">

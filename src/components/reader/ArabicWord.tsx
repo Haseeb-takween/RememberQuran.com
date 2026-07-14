@@ -33,7 +33,7 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
         <PopoverTrigger
           render={(props) => (
             <span {...props} className={triggerClass} tabIndex={0}>
-              {word.text_uthmani}
+              {word.qpc_uthmani_hafs || word.text_uthmani}
             </span>
           )}
         />
@@ -49,7 +49,7 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
       <TooltipTrigger
         render={(props) => (
           <span {...props} className={triggerClass} tabIndex={0}>
-            {word.text_uthmani}
+            {word.qpc_uthmani_hafs || word.text_uthmani}
           </span>
         )}
       />

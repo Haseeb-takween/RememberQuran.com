@@ -5,7 +5,7 @@ import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { TRANSLATION_IDS, TRANSLATION_NAMES } from "@/lib/quranApi"
 import { cn } from "@/lib/utils"
 
-type TMode = "none" | "si" | "both"
+type TMode = "none" | "si" | "khattab" | "both"
 
 const OPTIONS: {
   value: TMode
@@ -23,22 +23,29 @@ const OPTIONS: {
     description: "Clear, widely used English rendering",
   },
   {
+    value: "khattab",
+    label: TRANSLATION_NAMES[TRANSLATION_IDS.CLEAR_QURAN],
+    description: "Modern, easy-to-read English",
+  },
+  {
     value: "both",
     label: "Both translations",
     description: "Saheeh International and The Clear Quran",
   },
 ]
 
+const MODE_IDS: Record<Exclude<TMode, "none">, number[]> = {
+  si: [TRANSLATION_IDS.SAHEEH_INTERNATIONAL],
+  khattab: [TRANSLATION_IDS.CLEAR_QURAN],
+  both: [TRANSLATION_IDS.SAHEEH_INTERNATIONAL, TRANSLATION_IDS.CLEAR_QURAN],
+}
+
 function getMode(showTranslation: boolean, activeTranslations: number[]): TMode {
   if (!showTranslation || activeTranslations.length === 0) return "none"
-  if (
-    activeTranslations.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL) &&
-    activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)
-  ) {
-    return "both"
-  }
-  // Legacy Clear-Quran-only → treat as both (option removed)
-  if (activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)) return "both"
+  const hasSI = activeTranslations.includes(TRANSLATION_IDS.SAHEEH_INTERNATIONAL)
+  const hasKhattab = activeTranslations.includes(TRANSLATION_IDS.CLEAR_QURAN)
+  if (hasSI && hasKhattab) return "both"
+  if (hasKhattab) return "khattab"
   return "si"
 }
 
@@ -58,14 +65,7 @@ export function TranslationSelector() {
       return
     }
     setShowTranslation(true)
-    if (mode === "si") {
-      setActiveTranslations([TRANSLATION_IDS.SAHEEH_INTERNATIONAL])
-    } else {
-      setActiveTranslations([
-        TRANSLATION_IDS.SAHEEH_INTERNATIONAL,
-        TRANSLATION_IDS.CLEAR_QURAN,
-      ])
-    }
+    setActiveTranslations(MODE_IDS[mode])
   }
 
   return (
