@@ -12,6 +12,7 @@ import {
   CommandItem,
 } from "@/components/ui/command"
 import { useUI } from "@/context/UIContext"
+import { useSurahContentOptional } from "@/context/SurahContentContext"
 import type { Chapter } from "@/types/quran"
 
 interface SurahCommandProps {
@@ -22,6 +23,7 @@ const AYAH_KEY_RE = /^(\d+):(\d+)$/
 
 export function SurahCommand({ chapters }: SurahCommandProps) {
   const { commandOpen, setCommandOpen } = useUI()
+  const surahContent = useSurahContentOptional()
   const router = useRouter()
   const [input, setInput] = useState("")
 
@@ -39,7 +41,14 @@ export function SurahCommand({ chapters }: SurahCommandProps) {
   function handleSelect(href: string) {
     setCommandOpen(false)
     setInput("")
-    router.push(href)
+
+    const surahMatch = /^\/(\d+)$/.exec(href)
+    if (surahContent && surahMatch) {
+      surahContent.loadSurah(Number(surahMatch[1]))
+      return
+    }
+
+    router.push(href, { scroll: false })
   }
 
   function handleOpenChange(open: boolean) {

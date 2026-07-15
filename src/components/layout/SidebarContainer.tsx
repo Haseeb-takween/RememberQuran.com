@@ -15,22 +15,16 @@ export function SidebarContainer({ children }: { children: ReactNode }) {
         "hidden shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar md:flex",
         "sticky top-14 h-[calc(100dvh-3.5rem)]",
         "transition-[width,border-color] duration-200 ease-out",
-        sidebarOpen ? "w-60" : "w-0 border-r-transparent",
+        sidebarOpen ? "w-72" : "w-0 border-r-transparent",
       )}
     >
       <div
         className={cn(
-          "flex h-full min-h-0 w-60 flex-col",
+          "flex h-full min-h-0 w-72 flex-col",
           "transition-opacity duration-150",
           sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >
-        <div className="flex h-10 shrink-0 items-center border-b border-border/60 px-3">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Surahs
-          </p>
-        </div>
-        {/* flex-1 + min-h-0 is required so the list can scroll inside the sticky aside */}
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>
     </aside>

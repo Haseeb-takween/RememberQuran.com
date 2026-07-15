@@ -1,13 +1,21 @@
-import { getChapters } from "@/lib/quranApi"
-import { SurahList } from "./SurahList"
+"use client"
+
+import { useChapters } from "@/context/ChaptersContext"
+import { useUI } from "@/context/UIContext"
+import { SurahNavigationPanel } from "./SurahNavigationPanel"
 import { SidebarContainer } from "./SidebarContainer"
 
-export async function SurahSidebar() {
-  const chapters = await getChapters()
+export function SurahSidebar() {
+  const chapters = useChapters()
+  const { setSidebarOpen } = useUI()
 
   return (
     <SidebarContainer>
-      <SurahList chapters={chapters} />
+      <SurahNavigationPanel
+        chapters={chapters}
+        onClose={() => setSidebarOpen(false)}
+        showPickerTrigger
+      />
     </SidebarContainer>
   )
 }

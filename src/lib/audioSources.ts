@@ -1,12 +1,7 @@
 import type { Reciter } from "@/types/audio"
 import type { Word } from "@/types/quran"
 
-/**
- * Reciter registry. Adding a reciter = appending an entry here — nothing in
- * the audio system references reciters any other way. Ids are recitation ids
- * shared by api.quran.com/api/v4/resources/recitations and the QDC
- * /audio/reciters/{id}/audio_files endpoint (verified 2026-07).
- */
+
 export const RECITERS: Reciter[] = [
   {
     id: 7,
@@ -35,10 +30,7 @@ export function getReciter(id: number): Reciter {
   )
 }
 
-/**
- * Word-by-word pronunciation files. Word.audio_url from the QDC verses
- * endpoint is relative ("wbw/001_001_001.mp3") — end markers carry null.
- */
+
 const WORD_AUDIO_BASE_URL = "https://audio.qurancdn.com/"
 
 export function getWordAudioUrl(word: Word): string | null {

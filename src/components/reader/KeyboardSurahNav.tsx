@@ -1,36 +1,44 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
+import { useSurahContent } from "@/context/SurahContentContext"
 
-interface KeyboardSurahNavProps {
-  prevId: number | null
-  nextId: number | null
+function parseSurahId(pathname: string): number | null {
+  const match = pathname.match(/^\/(\d+)(?:\/|$)/)
+  if (!match) return null
+  const id = Number(match[1])
+  return id >= 1 && id <= 114 ? id : null
 }
 
-export function KeyboardSurahNav({ prevId, nextId }: KeyboardSurahNavProps) {
-  const router = useRouter()
+export function KeyboardSurahNav() {
+  const pathname = usePathname()
+  const { loadSurah } = useSurahContent()
+
+  const id = parseSurahId(pathname)
+  const prevId = id && id > 1 ? id - 1 : null
+  const nextId = id && id < 114 ? id + 1 : null
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      // Skip if focus is inside a text input or contenteditable
       const tag = (e.target as HTMLElement).tagName
-      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement).isContentEditable) return
-      // Skip if any modifier is held (avoid conflicting with browser shortcuts)
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement).isContentEditable) {
+        return
+      }
       if (e.metaKey || e.ctrlKey || e.altKey) return
 
       if (e.key === "[" && prevId) {
         e.preventDefault()
-        router.push(`/${prevId}`)
+        loadSurah(prevId)
       } else if (e.key === "]" && nextId) {
         e.preventDefault()
-        router.push(`/${nextId}`)
+        loadSurah(nextId)
       }
     }
 
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [prevId, nextId, router])
+  }, [prevId, nextId, loadSurah])
 
   return null
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { amiri, amiriQuran, sourceSerif4 } from "@/lib/fonts"
 import { getChapters } from "@/lib/quranApi"
 import Providers from "@/components/providers"
+import { ChaptersProvider } from "@/context/ChaptersContext"
 import { AudioPlayerBar } from "@/components/audio/AudioPlayerBar"
 import { Navbar } from "@/components/layout/Navbar"
 import { SurahSheet } from "@/components/layout/SurahSheet"
@@ -50,13 +51,15 @@ export default async function RootLayout({
           Skip to content
         </a>
         <Providers>
-          <Navbar />
-          <main id="main" tabIndex={-1} className="min-w-0 outline-none">
-            {children}
-          </main>
-          <SurahSheet chapters={chapters} />
-          <SurahCommand chapters={chapters} />
-          <AudioPlayerBar />
+          <ChaptersProvider chapters={chapters}>
+            <Navbar />
+            <main id="main" tabIndex={-1} className="min-w-0 outline-none">
+              {children}
+            </main>
+            <SurahSheet chapters={chapters} />
+            <SurahCommand chapters={chapters} />
+            <AudioPlayerBar />
+          </ChaptersProvider>
         </Providers>
       </body>
     </html>

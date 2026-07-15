@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Search, Menu, RadioTower } from "lucide-react"
+import { BookOpen, Search, RadioTower } from "lucide-react"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { useUI } from "@/context/UIContext"
 import { cn } from "@/lib/utils"
@@ -16,16 +16,11 @@ function isMac() {
   return /mac/i.test(navigator.platform)
 }
 
-function isSurahPath(pathname: string) {
-  return /^\/\d+/.test(pathname)
-}
-
 export function Navbar() {
   const pathname = usePathname()
-  const onSurahPage = isSurahPath(pathname)
   const [scrolled, setScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const { setCommandOpen, setMobileNavOpen } = useUI()
+  const { setCommandOpen } = useUI()
 
   useEffect(() => {
     setMounted(true)
@@ -43,22 +38,6 @@ export function Navbar() {
       )}
     >
       <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
-        {/* Mobile surah jump — only on reader pages (home already lists all surahs) */}
-        {onSurahPage && (
-          <button
-            type="button"
-            aria-label="Open surah list"
-            onClick={() => setMobileNavOpen(true)}
-            className={cn(
-              "flex size-9 items-center justify-center rounded-md md:hidden",
-              "text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground",
-              FOCUS,
-            )}
-          >
-            <Menu className="size-5" strokeWidth={1.75} />
-          </button>
-        )}
-
         <Link
           href="/"
           aria-label="RememberQuran — home"

@@ -51,6 +51,7 @@ export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps)
   return (
     <article
       aria-label={`Surah ${chapter.name_simple}`}
+      aria-busy={false}
       className="mx-auto max-w-6xl px-6 py-8 sm:px-10 sm:py-10"
       style={
         {

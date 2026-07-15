@@ -166,3 +166,12 @@ html {
   font-size: var(--translation-font-size, 1rem);
   line-height: 1.75;
 }
+
+@keyframes surah-load {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(420%);
+  }
+}

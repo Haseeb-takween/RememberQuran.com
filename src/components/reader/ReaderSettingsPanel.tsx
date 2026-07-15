@@ -5,6 +5,7 @@ import { FontSizeSelector } from "./FontSizeSelector"
 import { FontTypeSelector } from "./FontTypeSelector"
 import { DisplayModeToggle } from "./DisplayModeToggle"
 import { TranslationSelector } from "./TranslationSelector"
+import { ReciterSettingsSelector } from "./ReciterSettingsSelector"
 
 function Section({
   title,
@@ -28,6 +29,12 @@ export function ReaderSettingsPanel() {
     <div className="space-y-6">
       <Section title="View">
         <DisplayModeToggle />
+      </Section>
+
+      <div className="h-px bg-border/60" />
+
+      <Section title="Recitation">
+        <ReciterSettingsSelector />
       </Section>
 
       <div className="h-px bg-border/60" />

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { getChapter, getAllVerses } from "@/lib/quranApi"
-import { QuranReader } from "@/components/reader/QuranReader"
+import { SurahHydrate } from "@/components/reader/SurahHydrate"
 
 interface Props {
   params: Promise<{ surahId: string }>
@@ -43,5 +43,5 @@ export default async function SurahPage({ params }: Props) {
 
   if (!chapter) notFound()
 
-  return <QuranReader chapter={chapter} verses={verses} />
+  return <SurahHydrate chapter={chapter} verses={verses} />
 }

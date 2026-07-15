@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { getChapter, getAllVerses } from "@/lib/quranApi"
-import { QuranReader } from "@/components/reader/QuranReader"
+import { SurahHydrate } from "@/components/reader/SurahHydrate"
 
 interface Props {
   params: Promise<{ surahId: string; ayahId: string }>
@@ -47,5 +47,7 @@ export default async function AyahPage({ params }: Props) {
 
   const validAyah = !isNaN(ayah) && ayah >= 1 && ayah <= chapter.verses_count ? ayah : undefined
 
-  return <QuranReader chapter={chapter} verses={verses} targetAyahId={validAyah} />
+  return (
+    <SurahHydrate chapter={chapter} verses={verses} targetAyahId={validAyah} />
+  )
 }

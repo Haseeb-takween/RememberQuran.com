@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { ReaderSettingsProvider } from "@/context/ReaderSettingsContext"
 import { AudioPlayerProvider } from "@/context/AudioPlayerContext"
 import { UIProvider } from "@/context/UIContext"
+import { SurahContentProvider } from "@/context/SurahContentContext"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -19,12 +20,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <MotionConfig reducedMotion="user">
         <TooltipProvider delay={150}>
           <UIProvider>
-            <ReaderSettingsProvider>
-              <AudioPlayerProvider>
-                <RouteChangeEffect />
-                {children}
-              </AudioPlayerProvider>
-            </ReaderSettingsProvider>
+            <SurahContentProvider>
+              <ReaderSettingsProvider>
+                <AudioPlayerProvider>
+                  <RouteChangeEffect />
+                  {children}
+                </AudioPlayerProvider>
+              </ReaderSettingsProvider>
+            </SurahContentProvider>
           </UIProvider>
         </TooltipProvider>
       </MotionConfig>

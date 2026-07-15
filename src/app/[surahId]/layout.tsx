@@ -1,36 +1,27 @@
-import { getChapter } from "@/lib/quranApi"
+import { Suspense } from "react"
+import { SurahLayoutShell } from "@/components/layout/SurahLayoutShell"
 import { SurahSidebar } from "@/components/layout/SurahSidebar"
 import { ReaderControls } from "@/components/reader/ReaderControls"
 import { KeyboardSurahNav } from "@/components/reader/KeyboardSurahNav"
+import { SurahReaderViewport } from "@/components/reader/SurahReaderViewport"
 import { AudioDockSpacer } from "@/components/audio/AudioDockSpacer"
 
 interface Props {
   children: React.ReactNode
-  params: Promise<{ surahId: string }>
 }
 
-export default async function SurahLayout({ children, params }: Props) {
-  const { surahId } = await params
-  const id = Number(surahId)
-
-  const chapter = !isNaN(id) && id >= 1 && id <= 114
-    ? await getChapter(id)
-    : null
-
-  const prevId = chapter && chapter.id > 1 ? chapter.id - 1 : null
-  const nextId = chapter && chapter.id < 114 ? chapter.id + 1 : null
-
+export default function SurahLayout({ children }: Props) {
   return (
-    <div className="flex">
-      {/* Desktop sidebar — surah pages only */}
+    <SurahLayoutShell>
       <SurahSidebar />
 
       <div className="min-w-0 flex-1">
-        {chapter && <ReaderControls chapter={chapter} />}
-        <KeyboardSurahNav prevId={prevId} nextId={nextId} />
-        {children}
+        <ReaderControls />
+        <KeyboardSurahNav />
+        <Suspense fallback={null}>{children}</Suspense>
+        <SurahReaderViewport />
         <AudioDockSpacer />
       </div>
-    </div>
+    </SurahLayoutShell>
   )
 }

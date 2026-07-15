@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "motion/react"
 import { Search } from "lucide-react"
 import type { Chapter } from "@/types/quran"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
+import { useSurahContentOptional } from "@/context/SurahContentContext"
 
 interface SurahListProps {
   chapters: Chapter[]
@@ -21,13 +21,16 @@ export function SurahList({
   showSearch = true,
 }: SurahListProps) {
   const pathname = usePathname()
+  const surahContent = useSurahContentOptional()
   const [query, setQuery] = useState("")
-  const activeRef = useRef<HTMLAnchorElement>(null)
+  const navRef = useRef<HTMLElement>(null)
 
-  const activeSurahId = (() => {
+  const pathSurahId = (() => {
     const match = pathname.match(/^\/(\d+)/)
     return match ? Number(match[1]) : null
   })()
+
+  const activeSurahId = surahContent?.pendingSurahId ?? pathSurahId
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -40,11 +43,6 @@ export function SurahList({
         c.translated_name.name.toLowerCase().includes(q),
     )
   }, [chapters, query])
-
-  useEffect(() => {
-    if (!activeSurahId || query) return
-    activeRef.current?.scrollIntoView({ block: "center", behavior: "instant" })
-  }, [activeSurahId, query])
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -67,6 +65,7 @@ export function SurahList({
       )}
 
       <nav
+        ref={navRef}
         aria-label="Surahs"
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
       >
@@ -75,22 +74,24 @@ export function SurahList({
             const isActive = activeSurahId === chapter.id
             return (
               <li key={chapter.id} className="relative">
-                <AnimatePresence initial={false}>
-                  {isActive && (
-                    <motion.span
-                      layoutId="surah-active-indicator"
-                      className="absolute bottom-1 left-0 top-1 w-0.5 rounded-full bg-primary"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                    />
-                  )}
-                </AnimatePresence>
+                {isActive && (
+                  <span
+                    className="absolute bottom-1 left-0 top-1 w-0.5 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                )}
                 <Link
-                  ref={isActive ? activeRef : undefined}
                   href={`/${chapter.id}`}
-                  onClick={onNavigate}
+                  scroll={false}
+                  prefetch
+                  onMouseEnter={() => surahContent?.prefetchSurah(chapter.id)}
+                  onClick={(event) => {
+                    if (surahContent && !isActive) {
+                      event.preventDefault()
+                      surahContent.loadSurah(chapter.id)
+                    }
+                    onNavigate?.()
+                  }}
                   className={cn(
                     "flex items-center gap-2.5 rounded-md px-2.5 py-1.5",
                     "text-sm transition-colors duration-[120ms] ease-out",
