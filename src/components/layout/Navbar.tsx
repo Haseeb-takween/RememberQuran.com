@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Search, Menu } from "lucide-react"
+import { BookOpen, Search, Menu, RadioTower } from "lucide-react"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { useUI } from "@/context/UIContext"
 import { cn } from "@/lib/utils"
@@ -75,6 +75,19 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-1">
+          <Link
+            href="/radio"
+            aria-label="Quran Radio"
+            className={cn(
+              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
+              "text-xs text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground",
+              pathname === "/radio" && "text-primary",
+              FOCUS,
+            )}
+          >
+            <RadioTower className="size-3.5" strokeWidth={1.75} />
+            <span className="hidden sm:inline">Radio</span>
+          </Link>
           <button
             type="button"
             aria-label="Search surahs"
