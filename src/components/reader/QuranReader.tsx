@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useReducedMotion } from "motion/react"
 import type { Chapter, Verse } from "@/types/quran"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
-import { useVerseScrollRequest } from "@/lib/playbackStore"
+import { usePlaybackVerseKey, useVerseScrollRequest } from "@/lib/playbackStore"
 import { BismillahHeader } from "./BismillahHeader"
 import { AyahBlock } from "./AyahBlock"
 import { ReadingModeView } from "./ReadingModeView"
@@ -13,6 +13,39 @@ interface QuranReaderProps {
   chapter: Chapter
   verses: Verse[]
   targetAyahId?: number
+}
+
+/** Fixed mini player height — the strip an ayah must clear to count as visible */
+const PLAYER_BAR_PX = 56
+
+/**
+ * Center the recited ayah in the viewport. Skipped when it's already fully
+ * visible; with `onlyIfNear`, also skipped when it's more than a screen away
+ * (the reader has deliberately scrolled elsewhere).
+ */
+function scrollToRecitedAyah(
+  verseKey: string,
+  chapterId: number,
+  reduceMotion: boolean | null,
+  { onlyIfNear }: { onlyIfNear: boolean },
+) {
+  const [surahId, ayahId] = verseKey.split(":")
+  if (Number(surahId) !== chapterId) return
+  const el = document.getElementById(`ayah-${ayahId}`)
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const viewBottom = window.innerHeight - PLAYER_BAR_PX
+  if (rect.top >= 0 && rect.bottom <= viewBottom) return
+  if (
+    onlyIfNear &&
+    (rect.bottom < -window.innerHeight || rect.top > viewBottom + window.innerHeight)
+  ) {
+    return
+  }
+  el.scrollIntoView({
+    behavior: reduceMotion ? "auto" : "smooth",
+    block: "center",
+  })
 }
 
 export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps) {
@@ -49,25 +82,25 @@ export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps)
     }
   }, [targetAyahId, shouldReduceMotion])
 
-  // Scrubber seeks bring the recited ayah into view (playback itself never scrolls)
+  // Scrubber seeks bring the recited ayah into view even from far away
   const scrollRequest = useVerseScrollRequest()
   useEffect(() => {
     if (!scrollRequest) return
-    const [surahId, ayahId] = scrollRequest.verseKey.split(":")
-    if (Number(surahId) !== chapter.id) return
-    const el = document.getElementById(`ayah-${ayahId}`)
-    if (!el) return
-    // Already fully in view (above the fixed player bar)? Leave the page alone.
-    const rect = el.getBoundingClientRect()
-    const playerBarHeight = 56
-    if (rect.top >= 0 && rect.bottom <= window.innerHeight - playerBarHeight) {
-      return
-    }
-    el.scrollIntoView({
-      behavior: shouldReduceMotion ? "auto" : "smooth",
-      block: "center",
+    scrollToRecitedAyah(scrollRequest.verseKey, chapter.id, shouldReduceMotion, {
+      onlyIfNear: false,
     })
   }, [scrollRequest, chapter.id, shouldReduceMotion])
+
+  // Follow the recitation: as the active ayah changes during playback, keep
+  // it on screen — but never yank the reader back if they've scrolled far
+  // away to study another passage
+  const activePlaybackKey = usePlaybackVerseKey()
+  useEffect(() => {
+    if (!activePlaybackKey) return
+    scrollToRecitedAyah(activePlaybackKey, chapter.id, shouldReduceMotion, {
+      onlyIfNear: true,
+    })
+  }, [activePlaybackKey, chapter.id, shouldReduceMotion])
 
   return (
     <article
