@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Play, Bookmark, Copy, Share2, MoreHorizontal, Check } from "lucide-react"
+import { Bookmark, Copy, Share2, MoreHorizontal, Check } from "lucide-react"
 import type { Verse } from "@/types/quran"
 import type { DisplayMode } from "@/context/ReaderSettingsContext"
+import { PlayAyahButton } from "@/components/audio/PlayAyahButton"
+import { useHighlightedWord } from "@/lib/playbackStore"
 import { ArabicLine } from "./ArabicLine"
 import { AyahNumber } from "./AyahNumber"
 import { TranslationBlock } from "./TranslationBlock"
@@ -33,6 +35,9 @@ export function AyahBlock({
   isTarget = false,
 }: AyahBlockProps) {
   const [copied, setCopied] = useState(false)
+  const chapterId = Number(verse.verse_key.split(":")[0])
+  // Null for every verse except the one being recited — no re-renders while idle
+  const highlightedPosition = useHighlightedWord(verse.verse_key)
 
   const activeTranslations = verse.translations.filter((t) =>
     activeTranslationIds.includes(t.resource_id),
@@ -69,7 +74,11 @@ export function AyahBlock({
           isTarget && "bg-primary/5",
         )}
       >
-        <ArabicLine words={verse.words} showEndGlyph />
+        <ArabicLine
+          words={verse.words}
+          showEndGlyph
+          highlightedPosition={highlightedPosition}
+        />
       </div>
     )
   }
@@ -88,9 +97,12 @@ export function AyahBlock({
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <AyahNumber number={verse.verse_number} />
-          <button type="button" disabled title="Play (Milestone 2)" className={metaBtn}>
-            <Play className="size-3.5" strokeWidth={1.75} />
-          </button>
+          <PlayAyahButton
+            chapterId={chapterId}
+            verseNumber={verse.verse_number}
+            verseKey={verse.verse_key}
+            className={metaBtn}
+          />
           <button type="button" disabled title="Bookmark (Milestone 4)" className={metaBtn}>
             <Bookmark className="size-3.5" strokeWidth={1.75} />
           </button>
@@ -117,7 +129,7 @@ export function AyahBlock({
         </div>
       </div>
 
-      <ArabicLine words={verse.words} />
+      <ArabicLine words={verse.words} highlightedPosition={highlightedPosition} />
 
       {showTranslation &&
         activeTranslations.map((t) => (

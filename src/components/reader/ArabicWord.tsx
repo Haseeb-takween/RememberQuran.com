@@ -1,6 +1,8 @@
 "use client"
 
 import { useIsTouch } from "@/hooks/useIsTouch"
+import { useAudioPlayerActions } from "@/context/AudioPlayerContext"
+import { getWordAudioUrl } from "@/lib/audioSources"
 import type { Word } from "@/types/quran"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
@@ -9,7 +11,6 @@ import { cn } from "@/lib/utils"
 
 interface ArabicWordProps {
   word: Word
-  // M2 props — wired in Milestone 2
   onWordClick?: (word: Word) => void
   isHighlighted?: boolean
   isPlaying?: boolean
@@ -17,6 +18,8 @@ interface ArabicWordProps {
 
 export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
   const isTouch = useIsTouch()
+  // Stable actions context — never re-renders words on playback state changes
+  const actions = useAudioPlayerActions()
 
   const triggerClass = cn(
     "inline-block cursor-pointer rounded-sm px-0.5 py-1",
@@ -27,6 +30,12 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
     isHighlighted && "bg-primary/15",
   )
 
+  function speakWord() {
+    if (actions && getWordAudioUrl(word)) actions.playWord(word)
+  }
+
+  /* Touch: tap keeps opening the meaning popover exactly as before —
+     word audio lives on a button inside it (WordMeaningContent) */
   if (isTouch) {
     return (
       <Popover>
@@ -44,11 +53,27 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
     )
   }
 
+  /* Desktop: hover shows meaning (unchanged); click/Enter speaks the word */
   return (
     <Tooltip>
       <TooltipTrigger
         render={(props) => (
-          <span {...props} className={triggerClass} tabIndex={0}>
+          <span
+            {...props}
+            className={triggerClass}
+            tabIndex={0}
+            onClick={(e) => {
+              props.onClick?.(e)
+              speakWord()
+            }}
+            onKeyDown={(e) => {
+              props.onKeyDown?.(e)
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                speakWord()
+              }
+            }}
+          >
             {word.qpc_uthmani_hafs || word.text_uthmani}
           </span>
         )}

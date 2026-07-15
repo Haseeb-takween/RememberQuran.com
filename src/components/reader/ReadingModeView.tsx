@@ -1,6 +1,7 @@
 "use client"
 
 import type { Verse } from "@/types/quran"
+import { useHighlightedWord } from "@/lib/playbackStore"
 import { ArabicWord } from "./ArabicWord"
 import { AyahEndMarker } from "./AyahEndMarker"
 import { TranslationBlock } from "./TranslationBlock"
@@ -11,6 +12,43 @@ interface ReadingModeViewProps {
   showTranslation: boolean
   activeTranslationIds: number[]
   targetAyahId?: number
+}
+
+/** One verse span — separate component so the playback-highlight
+ * subscription is per verse and only the recited verse re-renders. */
+function ReadingVerse({ verse, isTarget }: { verse: Verse; isTarget: boolean }) {
+  const highlightedPosition = useHighlightedWord(verse.verse_key)
+  const words = (verse.words ?? []).filter(
+    (w) => w.char_type_name === "word" || w.char_type_name === "end",
+  )
+
+  return (
+    <span
+      id={`ayah-${verse.verse_number}`}
+      className={cn(
+        "scroll-mt-28",
+        isTarget && "rounded-sm bg-primary/8",
+      )}
+    >
+      {words.map((word, i) =>
+        word.char_type_name === "end" ? (
+          <AyahEndMarker
+            key={word.id}
+            digits={word.qpc_uthmani_hafs || word.text_uthmani}
+            ariaLabel={`Ayah ${verse.verse_number}`}
+          />
+        ) : (
+          <span key={word.id}>
+            <ArabicWord
+              word={word}
+              isHighlighted={highlightedPosition === word.position}
+            />
+            {i < words.length - 1 ? " " : null}
+          </span>
+        ),
+      )}{" "}
+    </span>
+  )
 }
 
 /**
@@ -31,38 +69,13 @@ export function ReadingModeView({
         lang="ar"
         className="quran-arabic text-justify leading-[2.15]"
       >
-        {verses.map((verse) => {
-          const words = (verse.words ?? []).filter(
-            (w) => w.char_type_name === "word" || w.char_type_name === "end",
-          )
-          const isTarget = targetAyahId === verse.verse_number
-
-          return (
-            <span
-              key={verse.id}
-              id={`ayah-${verse.verse_number}`}
-              className={cn(
-                "scroll-mt-28",
-                isTarget && "rounded-sm bg-primary/8",
-              )}
-            >
-              {words.map((word, i) =>
-                word.char_type_name === "end" ? (
-                  <AyahEndMarker
-                    key={word.id}
-                    digits={word.qpc_uthmani_hafs || word.text_uthmani}
-                    ariaLabel={`Ayah ${verse.verse_number}`}
-                  />
-                ) : (
-                  <span key={word.id}>
-                    <ArabicWord word={word} />
-                    {i < words.length - 1 ? " " : null}
-                  </span>
-                ),
-              )}{" "}
-            </span>
-          )
-        })}
+        {verses.map((verse) => (
+          <ReadingVerse
+            key={verse.id}
+            verse={verse}
+            isTarget={targetAyahId === verse.verse_number}
+          />
+        ))}
       </div>
 
       {showTranslation && (

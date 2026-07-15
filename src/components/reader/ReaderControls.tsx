@@ -7,6 +7,8 @@ import {
   ChevronRight,
   Bookmark,
   Play,
+  Pause,
+  Loader2,
   Settings2,
   PanelLeftClose,
   PanelLeftOpen,
@@ -20,6 +22,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { useUI } from "@/context/UIContext"
+import { useAudioPlayer } from "@/context/AudioPlayerContext"
 import { AyahSelector } from "./AyahSelector"
 import { ReaderSettingsPanel } from "./ReaderSettingsPanel"
 import type { Chapter } from "@/types/quran"
@@ -39,8 +42,21 @@ const iconBtn = cn(
 
 export function ReaderControls({ chapter }: ReaderControlsProps) {
   const { sidebarOpen, toggleSidebar } = useUI()
+  const player = useAudioPlayer()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  const isThisChapter = player.chapterId === chapter.id
+  const isPlayingThis = isThisChapter && player.status === "playing"
+  const isLoadingThis = isThisChapter && player.status === "loading"
+
+  function handlePlaySurah() {
+    if (isThisChapter && (player.status === "playing" || player.status === "paused")) {
+      player.togglePlayPause()
+    } else {
+      player.playChapter(chapter.id)
+    }
+  }
 
   useEffect(() => {
     function onFsChange() {
@@ -139,8 +155,20 @@ export function ReaderControls({ chapter }: ReaderControlsProps) {
               <Bookmark className="size-4" strokeWidth={1.75} />
             </button>
 
-            <button type="button" title="Audio (Milestone 2)" disabled className={iconBtn}>
-              <Play className="size-4" strokeWidth={1.75} />
+            <button
+              type="button"
+              title={isPlayingThis ? "Pause" : "Play surah"}
+              aria-label={isPlayingThis ? "Pause" : "Play surah"}
+              onClick={handlePlaySurah}
+              className={cn(iconBtn, isPlayingThis && "text-primary")}
+            >
+              {isLoadingThis ? (
+                <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
+              ) : isPlayingThis ? (
+                <Pause className="size-4" strokeWidth={1.75} />
+              ) : (
+                <Play className="size-4" strokeWidth={1.75} />
+              )}
             </button>
 
             <button
