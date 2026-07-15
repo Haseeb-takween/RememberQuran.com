@@ -2,6 +2,7 @@ import { getChapter } from "@/lib/quranApi"
 import { SurahSidebar } from "@/components/layout/SurahSidebar"
 import { ReaderControls } from "@/components/reader/ReaderControls"
 import { KeyboardSurahNav } from "@/components/reader/KeyboardSurahNav"
+import { AudioDockSpacer } from "@/components/audio/AudioDockSpacer"
 
 interface Props {
   children: React.ReactNode
@@ -28,7 +29,7 @@ export default async function SurahLayout({ children, params }: Props) {
         {chapter && <ReaderControls chapter={chapter} />}
         <KeyboardSurahNav prevId={prevId} nextId={nextId} />
         {children}
-        <div data-slot="audio-dock" aria-hidden="true" className="h-0" />
+        <AudioDockSpacer />
       </div>
     </div>
   )
