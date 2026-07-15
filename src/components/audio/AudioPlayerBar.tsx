@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import {
   Play,
@@ -33,6 +34,63 @@ function formatTime(totalSeconds: number): string {
   const sec = s % 60
   const mm = h > 0 ? String(m).padStart(2, "0") : String(m)
   return `${h > 0 ? `${h}:` : ""}${mm}:${String(sec).padStart(2, "0")}`
+}
+
+/**
+ * Progress + scrubber strip along the bar's top edge. Visual track is plain
+ * divs; a transparent native range input on top handles click/drag/keyboard.
+ * While dragging, the local value shields the UI from the 1 Hz store ticks.
+ */
+function SeekBar({
+  durationMs,
+  onSeek,
+}: {
+  durationMs: number
+  onSeek: (ms: number) => void
+}) {
+  const elapsed = useElapsedSeconds()
+  const [dragValue, setDragValue] = useState<number | null>(null)
+  const total = Math.max(1, Math.round(durationMs / 1000))
+  const value = Math.min(dragValue ?? elapsed, total)
+
+  return (
+    <div className="group absolute inset-x-0 -top-1.5 h-3">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border/60 transition-[height] duration-[120ms] group-hover:h-1"
+      >
+        <div
+          className="h-full bg-primary"
+          style={{ width: `${(value / total) * 100}%` }}
+        />
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={total}
+        step={1}
+        value={value}
+        aria-label="Seek"
+        aria-valuetext={`${formatTime(value)} of ${formatTime(total)}`}
+        onChange={(e) => {
+          const next = Number(e.target.value)
+          setDragValue(next)
+          onSeek(next * 1000)
+        }}
+        onPointerUp={() => setDragValue(null)}
+        onKeyUp={() => setDragValue(null)}
+        onBlur={() => setDragValue(null)}
+        className={cn(
+          "absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "[&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:opacity-0 [&::-webkit-slider-thumb]:transition-opacity [&::-webkit-slider-thumb]:duration-[120ms]",
+          "group-hover:[&::-webkit-slider-thumb]:opacity-100 focus-visible:[&::-webkit-slider-thumb]:opacity-100",
+          "[&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:opacity-0 [&::-moz-range-thumb]:transition-opacity [&::-moz-range-thumb]:duration-[120ms]",
+          "group-hover:[&::-moz-range-thumb]:opacity-100 focus-visible:[&::-moz-range-thumb]:opacity-100",
+        )}
+      />
+    </div>
+  )
 }
 
 /** Elapsed time isolated in its own component — re-renders 1×/sec here only */
@@ -112,6 +170,11 @@ export function AudioPlayerBar() {
         "animate-in slide-in-from-bottom-4 fade-in duration-200",
       )}
     >
+      {player.durationMs !== null &&
+        player.status !== "error" &&
+        player.status !== "loading" && (
+          <SeekBar durationMs={player.durationMs} onSeek={player.seekToTime} />
+        )}
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
         <div className="min-w-0 flex-1">
           <NowPlayingLabel

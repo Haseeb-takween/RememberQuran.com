@@ -104,7 +104,12 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
         <select
           aria-label="Starting surah"
           value={startChapterId}
-          onChange={(e) => setStartChapterId(Number(e.target.value))}
+          onChange={(e) => {
+            const id = Number(e.target.value)
+            setStartChapterId(id)
+            // Mid-play selection switches the radio immediately (RQ-09)
+            if (isRadio) player.startRadio(id)
+          }}
           className={cn(
             "w-full appearance-none rounded-md border border-border bg-background px-3 py-2 text-sm",
             "transition-colors duration-[120ms] hover:bg-accent",

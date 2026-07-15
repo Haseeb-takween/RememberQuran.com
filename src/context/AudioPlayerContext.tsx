@@ -67,6 +67,7 @@ export interface AudioPlayerActions {
   nextAyah: () => void
   prevAyah: () => void
   seekToVerse: (verseNumber: number) => void
+  seekToTime: (ms: number) => void
   setReciter: (id: number) => void
   setSpeed: (speed: PlaybackSpeed) => void
   setRepeat: (config: Omit<RepeatConfig, "remaining">) => void
@@ -531,6 +532,26 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     [seekToVerseInternal],
   )
 
+  /** Seek to an arbitrary position (scrubber) and publish it immediately */
+  const seekToTime = useCallback((ms: number) => {
+    const audio = audioRef.current
+    if (!audio || !audio.currentSrc) return
+    const clamped = Math.max(0, ms)
+    if (audio.readyState >= 1) {
+      audio.currentTime = clamped / 1000
+    } else {
+      pendingSeekMsRef.current = clamped
+    }
+    lastVerseIdxRef.current = -1
+    lastWordPosRef.current = null
+    const timing = timingsRef.current[findVerseIndex(timingsRef.current, clamped)]
+    setPosition({
+      verseKey: timing?.verseKey ?? null,
+      wordPosition: null,
+      timeMs: clamped,
+    })
+  }, [])
+
   const setReciter = useCallback(
     (id: number) => {
       const reciter = getReciter(id)
@@ -659,13 +680,29 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   }, [stopLoop])
 
   const handleEnded = useCallback(() => {
+    // A range ending on the last ayah reaches the file's end before the
+    // tick check can fire — honour the repeat here, not just in tickBody
+    const rep = repeatRef.current
+    const audio = audioRef.current
+    if (rep.mode !== "off" && audio) {
+      const startTiming = timingsRef.current[rep.start - 1]
+      if (rep.remaining > 1 && startTiming) {
+        rep.remaining -= 1
+        dispatch({ type: "REPEAT_REMAINING", remaining: rep.remaining })
+        audio.currentTime = startTiming.from / 1000
+        safePlay()
+        return
+      }
+      repeatRef.current = REPEAT_OFF
+      dispatch({ type: "SET_REPEAT", repeat: REPEAT_OFF })
+    }
     stopLoop()
     if (modeRef.current === "radio" && chapterIdRef.current !== null) {
       void advanceRadio((chapterIdRef.current % 114) + 1)
     } else {
       dispatch({ type: "PAUSED" })
     }
-  }, [stopLoop, advanceRadio])
+  }, [stopLoop, advanceRadio, safePlay])
 
   const handleError = useCallback(() => {
     if (!audioRef.current?.currentSrc) return // fired by clearing src
@@ -703,6 +740,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       nextAyah,
       prevAyah,
       seekToVerse,
+      seekToTime,
       setReciter,
       setSpeed,
       setRepeat: setRepeatAction,
@@ -718,6 +756,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       nextAyah,
       prevAyah,
       seekToVerse,
+      seekToTime,
       setReciter,
       setSpeed,
       setRepeatAction,
