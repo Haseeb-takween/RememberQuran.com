@@ -77,3 +77,34 @@ export function useElapsedSeconds(): number {
     () => 0,
   )
 }
+
+/**
+ * One-shot "bring this ayah into view" signal, fired only by explicit user
+ * seeks (the scrubber) — never by ordinary playback, so the page stays put
+ * while reading. The id makes repeat seeks to the same ayah re-fire.
+ */
+export interface VerseScrollRequest {
+  verseKey: string
+  id: number
+}
+
+let scrollRequest: VerseScrollRequest | null = null
+const scrollListeners = new Set<() => void>()
+
+export function requestScrollToVerse(verseKey: string): void {
+  scrollRequest = { verseKey, id: (scrollRequest?.id ?? 0) + 1 }
+  scrollListeners.forEach((l) => l())
+}
+
+function subscribeScroll(callback: () => void): () => void {
+  scrollListeners.add(callback)
+  return () => scrollListeners.delete(callback)
+}
+
+export function useVerseScrollRequest(): VerseScrollRequest | null {
+  return useSyncExternalStore(
+    subscribeScroll,
+    () => scrollRequest,
+    () => null,
+  )
+}

@@ -50,11 +50,29 @@ function SeekBar({
 }) {
   const elapsed = useElapsedSeconds()
   const [dragValue, setDragValue] = useState<number | null>(null)
+  const [hoverFrac, setHoverFrac] = useState<number | null>(null)
   const total = Math.max(1, Math.round(durationMs / 1000))
   const value = Math.min(dragValue ?? elapsed, total)
 
   return (
-    <div className="group absolute inset-x-0 -top-1.5 h-3">
+    <div
+      className="group absolute inset-x-0 -top-1.5 h-3"
+      onPointerMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        setHoverFrac(
+          Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1),
+        )
+      }}
+      onPointerLeave={() => setHoverFrac(null)}
+    >
+      {hoverFrac !== null && (
+        <span
+          className="pointer-events-none absolute bottom-full mb-1.5 -translate-x-1/2 rounded-md border border-border/60 bg-background/95 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground shadow-sm backdrop-blur-sm"
+          style={{ left: `${hoverFrac * 100}%` }}
+        >
+          {formatTime(hoverFrac * total)}
+        </span>
+      )}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-border/60 transition-[height] duration-[120ms] group-hover:h-1"
@@ -97,9 +115,11 @@ function SeekBar({
 function ElapsedTime({ durationMs }: { durationMs: number | null }) {
   const elapsed = useElapsedSeconds()
   return (
-    <span className="hidden text-xs tabular-nums text-muted-foreground md:inline">
+    <span className="text-xs tabular-nums text-muted-foreground">
       {formatTime(elapsed)}
-      {durationMs ? ` / ${formatTime(durationMs / 1000)}` : ""}
+      {durationMs ? (
+        <span className="hidden sm:inline">{` / ${formatTime(durationMs / 1000)}`}</span>
+      ) : null}
     </span>
   )
 }

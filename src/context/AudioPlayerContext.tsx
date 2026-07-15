@@ -24,7 +24,11 @@ import {
   findWordPosition,
   type CleanVerseTiming,
 } from "@/lib/wordSync"
-import { setPosition, clearPosition } from "@/lib/playbackStore"
+import {
+  setPosition,
+  clearPosition,
+  requestScrollToVerse,
+} from "@/lib/playbackStore"
 import {
   PLAYBACK_SPEEDS,
   type PlaybackSpeed,
@@ -532,6 +536,24 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     [seekToVerseInternal],
   )
 
+  /** Keep the lock-screen scrubber in step with the real audio position */
+  const syncMediaPosition = useCallback(() => {
+    if (!("mediaSession" in navigator)) return
+    const audio = audioRef.current
+    if (!audio?.currentSrc || !Number.isFinite(audio.duration) || audio.duration <= 0) {
+      return
+    }
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: audio.duration,
+        position: Math.min(audio.currentTime, audio.duration),
+        playbackRate: audio.playbackRate || 1,
+      })
+    } catch {
+      // some browsers reject partial position data — cosmetic only
+    }
+  }, [])
+
   /** Seek to an arbitrary position (scrubber) and publish it immediately */
   const seekToTime = useCallback((ms: number) => {
     const audio = audioRef.current
@@ -550,7 +572,9 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       wordPosition: null,
       timeMs: clamped,
     })
-  }, [])
+    if (timing) requestScrollToVerse(timing.verseKey)
+    syncMediaPosition()
+  }, [syncMediaPosition])
 
   const setReciter = useCallback(
     (id: number) => {
@@ -720,7 +744,8 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       audio.currentTime = pendingSeekMsRef.current / 1000
       pendingSeekMsRef.current = null
     }
-  }, [])
+    syncMediaPosition()
+  }, [syncMediaPosition])
 
   const handleWaiting = useCallback(
     () => dispatch({ type: "BUFFERING", buffering: true }),
@@ -730,6 +755,64 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     () => dispatch({ type: "BUFFERING", buffering: false }),
     [],
   )
+
+  // Media Session: surah + reciter on the lock screen / earbuds / media keys
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return
+    const ms = navigator.mediaSession
+    if (state.status === "idle") {
+      ms.metadata = null
+      ms.playbackState = "none"
+      return
+    }
+    ms.playbackState = state.status === "playing" ? "playing" : "paused"
+    ms.metadata = new MediaMetadata({
+      title:
+        state.chapterName ??
+        (state.chapterId !== null ? `Surah ${state.chapterId}` : "Quran"),
+      artist: getReciter(prefs.reciterId).name,
+      album: "RememberQuran",
+    })
+    syncMediaPosition()
+  }, [
+    state.status,
+    state.chapterName,
+    state.chapterId,
+    prefs.reciterId,
+    prefs.speed,
+    syncMediaPosition,
+  ])
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return
+    const ms = navigator.mediaSession
+    const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ["play", () => togglePlayPause()],
+      ["pause", () => togglePlayPause()],
+      ["previoustrack", () => prevAyah()],
+      ["nexttrack", () => nextAyah()],
+      [
+        "seekto",
+        (d) => {
+          if (d.seekTime != null) seekToTime(d.seekTime * 1000)
+        },
+      ],
+    ]
+    for (const [action, handler] of handlers) {
+      try {
+        ms.setActionHandler(action, handler)
+      } catch {
+        // action not supported on this browser
+      }
+    }
+    return () => {
+      for (const [action] of handlers) {
+        try {
+          ms.setActionHandler(action, null)
+        } catch {}
+      }
+    }
+  }, [togglePlayPause, prevAyah, nextAyah, seekToTime])
 
   const actions = useMemo<AudioPlayerActions>(
     () => ({

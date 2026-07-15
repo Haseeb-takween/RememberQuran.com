@@ -15,9 +15,6 @@ function isSurahPath(pathname: string) {
   return /^\/\d+/.test(pathname)
 }
 
-/** Navbar (h-14) + reader toolbar (h-11) — panel anchors below both bars */
-const SURAH_PICKER_TOP = "top-[6.25rem]"
-
 export function SurahSheet({ chapters }: SurahSheetProps) {
   const pathname = usePathname()
   const { mobileNavOpen, setMobileNavOpen } = useUI()
@@ -28,12 +25,13 @@ export function SurahSheet({ chapters }: SurahSheetProps) {
     }
   }, [pathname, setMobileNavOpen])
 
+  // Same navigation panel as the desktop sidebar, as a full-height drawer
   return (
     <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
       <SheetContent
-        side="top"
+        side="left"
         showCloseButton={false}
-        className={`${SURAH_PICKER_TOP} flex max-h-[min(28rem,calc(100dvh-6.25rem))] flex-col gap-0 border-b p-0 sm:max-w-none`}
+        className="flex w-80 max-w-[85vw] flex-col gap-0 p-0"
       >
         <SurahNavigationPanel
           chapters={chapters}

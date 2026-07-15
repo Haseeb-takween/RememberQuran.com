@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useReducedMotion } from "motion/react"
 import type { Chapter, Verse } from "@/types/quran"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
+import { useVerseScrollRequest } from "@/lib/playbackStore"
 import { BismillahHeader } from "./BismillahHeader"
 import { AyahBlock } from "./AyahBlock"
 import { ReadingModeView } from "./ReadingModeView"
@@ -47,6 +48,26 @@ export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps)
       if (clearRef.current) clearTimeout(clearRef.current)
     }
   }, [targetAyahId, shouldReduceMotion])
+
+  // Scrubber seeks bring the recited ayah into view (playback itself never scrolls)
+  const scrollRequest = useVerseScrollRequest()
+  useEffect(() => {
+    if (!scrollRequest) return
+    const [surahId, ayahId] = scrollRequest.verseKey.split(":")
+    if (Number(surahId) !== chapter.id) return
+    const el = document.getElementById(`ayah-${ayahId}`)
+    if (!el) return
+    // Already fully in view (above the fixed player bar)? Leave the page alone.
+    const rect = el.getBoundingClientRect()
+    const playerBarHeight = 56
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight - playerBarHeight) {
+      return
+    }
+    el.scrollIntoView({
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+      block: "center",
+    })
+  }, [scrollRequest, chapter.id, shouldReduceMotion])
 
   return (
     <article
