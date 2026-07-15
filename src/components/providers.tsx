@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes"
 import { MotionConfig } from "motion/react"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ReaderSettingsProvider } from "@/context/ReaderSettingsContext"
+import { AudioPlayerProvider } from "@/context/AudioPlayerContext"
 import { UIProvider } from "@/context/UIContext"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
 
@@ -19,8 +20,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <TooltipProvider delay={150}>
           <UIProvider>
             <ReaderSettingsProvider>
-              <RouteChangeEffect />
-              {children}
+              <AudioPlayerProvider>
+                <RouteChangeEffect />
+                {children}
+              </AudioPlayerProvider>
             </ReaderSettingsProvider>
           </UIProvider>
         </TooltipProvider>
