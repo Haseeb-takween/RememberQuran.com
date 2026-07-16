@@ -9,8 +9,8 @@ import {
 } from "react"
 import { useSurahContent } from "@/context/SurahContentContext"
 
-/** "asbab" and "word" views land in later M3 phases — the shell is built
- * around this union from day one so they slot in without rework. */
+/** "word" (morphology) lands in Phase 5 — the shell is built around this
+ * union from day one so it slots in without rework. */
 export type StudyView = "tafsir" | "asbab" | "word"
 
 export interface StudyTarget {
@@ -23,6 +23,7 @@ export interface StudyTarget {
 interface StudyPanelContextValue {
   target: StudyTarget | null
   openTafsir: (verseKey: string) => void
+  openAsbab: (verseKey: string) => void
   setView: (view: StudyView) => void
   /** Move the panel to the previous/next ayah, clamped to the surah bounds */
   navigateAyah: (delta: 1 | -1) => void
@@ -46,6 +47,10 @@ export function StudyPanelProvider({ children }: { children: ReactNode }) {
 
   const openTafsir = useCallback((verseKey: string) => {
     setTarget({ view: "tafsir", verseKey })
+  }, [])
+
+  const openAsbab = useCallback((verseKey: string) => {
+    setTarget({ view: "asbab", verseKey })
   }, [])
 
   const setView = useCallback((view: StudyView) => {
@@ -72,7 +77,7 @@ export function StudyPanelProvider({ children }: { children: ReactNode }) {
 
   return (
     <StudyPanelContext.Provider
-      value={{ target, openTafsir, setView, navigateAyah, close }}
+      value={{ target, openTafsir, openAsbab, setView, navigateAyah, close }}
     >
       {children}
     </StudyPanelContext.Provider>

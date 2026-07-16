@@ -1,4 +1,4 @@
-import type { TafsirResource, TafsirContent } from "@/types/study"
+import type { TafsirResource, TafsirContent, AsbabContent } from "@/types/study"
 
 /**
  * Tafsir book registry — adding a book in Milestone 5 means appending an
@@ -60,5 +60,26 @@ export async function getTafsir(
 
   tafsirCache.set(key, promise)
   promise.catch(() => tafsirCache.delete(key))
+  return promise
+}
+
+/** Asbab al-Nuzul cache keyed by verseKey — same eviction-on-failure pattern */
+const asbabCache = new Map<string, Promise<AsbabContent>>()
+
+export async function getAsbab(verseKey: string): Promise<AsbabContent> {
+  const cached = asbabCache.get(verseKey)
+  if (cached) return cached
+
+  const [surahId, ayahId] = verseKey.split(":")
+  const promise = (async () => {
+    const res = await fetch(`/api/asbab/${surahId}/${ayahId}`)
+    if (!res.ok) {
+      throw new Error(`Asbab ${verseKey} failed to load (${res.status})`)
+    }
+    return (await res.json()) as AsbabContent
+  })()
+
+  asbabCache.set(verseKey, promise)
+  promise.catch(() => asbabCache.delete(verseKey))
   return promise
 }

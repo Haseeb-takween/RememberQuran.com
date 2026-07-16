@@ -19,6 +19,11 @@ export interface TafsirContent {
   coveredKeys: string[]
 }
 
+/** Cleaned Asbab al-Nuzul entry — null when the ayah has no recorded reason */
+export interface AsbabContent {
+  text: string | null
+}
+
 /** Raw QDC response shape for /tafsirs/{slug}/by_ayah/{verse_key} */
 export interface QdcTafsirResponse {
   tafsir?: {

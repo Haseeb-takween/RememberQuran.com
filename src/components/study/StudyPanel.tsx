@@ -12,9 +12,13 @@ import {
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { TafsirView } from "./TafsirView"
+import { AsbabView } from "./AsbabView"
 
-/** Tab registry — "asbab" (Context) and "word" views land in later M3 phases */
-const VIEWS: { view: StudyView; label: string }[] = [{ view: "tafsir", label: "Tafsir" }]
+/** Tab registry — the "word" (morphology) view lands in Phase 5 */
+const VIEWS: { view: StudyView; label: string }[] = [
+  { view: "tafsir", label: "Tafsir" },
+  { view: "asbab", label: "Context" },
+]
 
 const navBtn = cn(
   "flex size-7 items-center justify-center rounded-md",
@@ -26,8 +30,8 @@ const navBtn = cn(
 
 /**
  * The shared study panel: bottom sheet on mobile, non-modal side panel on
- * desktop (reader stays scrollable, audio keeps playing). One shell serves
- * tafsir now and asbab/word-morphology in later phases.
+ * desktop (reader stays scrollable, audio keeps playing). One shell for
+ * tafsir, asbab (Context), and word-morphology (Phase 5).
  */
 export function StudyPanel() {
   const { target, setView, navigateAyah, close } = useStudyPanel()
@@ -125,6 +129,7 @@ export function StudyPanel() {
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
               {target.view === "tafsir" && <TafsirView verseKey={target.verseKey} />}
+              {target.view === "asbab" && <AsbabView verseKey={target.verseKey} />}
             </div>
           </>
         )}

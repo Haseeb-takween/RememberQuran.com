@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Bookmark, BookOpen, Copy, Share2, MoreHorizontal, Check } from "lucide-react"
+import { Bookmark, BookOpen, Copy, Share2, MoreHorizontal, Check, ScrollText } from "lucide-react"
 import type { Verse } from "@/types/quran"
 import type { DisplayMode } from "@/context/ReaderSettingsContext"
 import { PlayAyahButton } from "@/components/audio/PlayAyahButton"
 import { useStudyPanel } from "@/context/StudyPanelContext"
+import { hasAsbab } from "@/lib/asbabIndex"
 import { useHighlightedWord } from "@/lib/playbackStore"
 import { ArabicLine } from "./ArabicLine"
 import { AyahNumber } from "./AyahNumber"
@@ -36,7 +37,7 @@ export function AyahBlock({
   isTarget = false,
 }: AyahBlockProps) {
   const [copied, setCopied] = useState(false)
-  const { openTafsir } = useStudyPanel()
+  const { openTafsir, openAsbab } = useStudyPanel()
   const chapterId = Number(verse.verse_key.split(":")[0])
   // Null for every verse except the one being recited — no re-renders while idle
   const highlightedPosition = useHighlightedWord(verse.verse_key)
@@ -113,6 +114,18 @@ export function AyahBlock({
           >
             <BookOpen className="size-3.5" strokeWidth={1.75} />
           </button>
+          {/* Only covered ayahs show this icon — presence signals availability,
+              so the ~5,800 uncovered ayahs stay uncluttered */}
+          {hasAsbab(verse.verse_key) && (
+            <button
+              type="button"
+              title="Reason for revelation"
+              onClick={() => openAsbab(verse.verse_key)}
+              className={metaBtn}
+            >
+              <ScrollText className="size-3.5" strokeWidth={1.75} />
+            </button>
+          )}
           <button type="button" disabled title="Bookmark (Milestone 4)" className={metaBtn}>
             <Bookmark className="size-3.5" strokeWidth={1.75} />
           </button>
