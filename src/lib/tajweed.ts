@@ -112,3 +112,107 @@ export function parseTajweedWord(text: string): TajweedToken[] {
   parseCache.set(text, tokens)
   return tokens
 }
+
+const spanCache = new Map<string, TajweedToken[]>()
+
+/** Arabic tatweel / kashida — tajweed markup often inserts extras the QPC string omits */
+const TATWEEL = "\u0640"
+
+function pushSpan(spans: TajweedToken[], ch: string, rule?: string) {
+  const prev = spans[spans.length - 1]
+  if (prev && prev.rule === rule) {
+    prev.text += ch
+  } else {
+    spans.push(rule ? { text: ch, rule } : { text: ch })
+  }
+}
+
+function spansFromRules(
+  plainChars: string[],
+  rules: (string | undefined)[],
+): TajweedToken[] {
+  const spans: TajweedToken[] = []
+  for (let i = 0; i < plainChars.length; i++) {
+    pushSpan(spans, plainChars[i], rules[i])
+  }
+  return spans.length > 0 ? spans : [{ text: plainChars.join("") }]
+}
+
+/**
+ * Map tajweed rule colours onto the QPC/Uthmani plain glyphs the reader
+ * already uses. Rendering the tajweed markup string directly shifts word
+ * shapes (extra tatweels, different tanween) — clicks then land on the
+ * neighbouring word. Aligns by codepoint, skipping tatweel-only extras.
+ */
+export function buildTajweedSpans(
+  plainText: string,
+  tajweedMarkup: string,
+): TajweedToken[] {
+  const key = `${plainText}\0${tajweedMarkup}`
+  const cached = spanCache.get(key)
+  if (cached) return cached
+
+  const tokens = parseTajweedWord(tajweedMarkup)
+  const marked: { ch: string; rule?: string }[] = []
+  for (const token of tokens) {
+    for (const ch of [...token.text]) {
+      marked.push({ ch, rule: token.rule })
+    }
+  }
+
+  const plainChars = [...plainText]
+  const alignedRules: (string | undefined)[] = []
+  let mi = 0
+  let aligned = true
+
+  for (let pi = 0; pi < plainChars.length; pi++) {
+    const pch = plainChars[pi]
+
+    while (mi < marked.length && marked[mi].ch === TATWEEL && pch !== TATWEEL) {
+      mi++
+    }
+
+    if (mi >= marked.length) {
+      alignedRules.push(undefined)
+      continue
+    }
+
+    const m = marked[mi]
+
+    if (pch === m.ch) {
+      alignedRules.push(m.rule)
+      mi++
+      continue
+    }
+
+    if (pch === TATWEEL && m.ch !== TATWEEL) {
+      alignedRules.push(m.rule)
+      continue
+    }
+
+    aligned = false
+    break
+  }
+
+  if (aligned && alignedRules.length === plainChars.length) {
+    const result = spansFromRules(plainChars, alignedRules)
+    spanCache.set(key, result)
+    return result
+  }
+
+  // Same visible length after dropping tatweels, but some marks differ
+  // (e.g. QPC ٗ vs tajweed ً) — colour by index, keep QPC glyphs.
+  const markedNoTat = marked.filter((m) => m.ch !== TATWEEL)
+  if (markedNoTat.length === plainChars.length) {
+    const result = spansFromRules(
+      plainChars,
+      markedNoTat.map((m) => m.rule),
+    )
+    spanCache.set(key, result)
+    return result
+  }
+
+  const fallback = [{ text: plainText }]
+  spanCache.set(key, fallback)
+  return fallback
+}

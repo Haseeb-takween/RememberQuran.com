@@ -4,7 +4,7 @@ import { useIsTouch } from "@/hooks/useIsTouch"
 import { useAudioPlayerActions } from "@/context/AudioPlayerContext"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { getWordAudioUrl } from "@/lib/audioSources"
-import { parseTajweedWord } from "@/lib/tajweed"
+import { buildTajweedSpans } from "@/lib/tajweed"
 import type { Word } from "@/types/quran"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
@@ -30,14 +30,17 @@ export function ArabicWord({ word, isHighlighted = false, verseKey }: ArabicWord
 
   function wordContent() {
     if (tajweedEnabled && word.text_uthmani_tajweed) {
-      return parseTajweedWord(word.text_uthmani_tajweed).map(({ text, rule }, i) =>
-        rule ? (
-          <span key={i} className={`tj-${rule}`}>
-            {text}
-          </span>
-        ) : (
-          text
-        ),
+      return buildTajweedSpans(plainText, word.text_uthmani_tajweed).map(
+        ({ text, rule }, i) =>
+          rule ? (
+            <span key={i} className={`tj-span tj-${rule}`}>
+              {text}
+            </span>
+          ) : (
+            <span key={i} className="tj-span">
+              {text}
+            </span>
+          ),
       )
     }
     return plainText

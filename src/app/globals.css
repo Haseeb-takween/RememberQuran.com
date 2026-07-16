@@ -260,6 +260,12 @@ html {
   --tj-custom-alef-maksora:   oklch(0.70 0.18 60);
 }
 
+/* Colour spans must not create their own boxes — otherwise Arabic shaping
+   breaks mid-word, widths drift, and click hits the neighbouring word. */
+.tj-span {
+  display: contents;
+}
+
 .tj-ham_wasl, .tj-laam_shamsiyah       { color: var(--tj-ham_wasl); }
 .tj-madda_normal, .tj-madda_permissible { color: var(--tj-madda_normal); }
 .tj-madda_necessary, .tj-madda_obligatory { color: var(--tj-madda_necessary); }
