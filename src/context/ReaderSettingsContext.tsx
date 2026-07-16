@@ -8,6 +8,7 @@ import {
 } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import { DEFAULT_TRANSLATIONS, TRANSLATION_IDS } from "@/lib/quranApi"
+import { DEFAULT_TAFSIR_SLUG, isTafsirSlug } from "@/lib/studyApi"
 import {
   type QuranFont,
   type FontScale,
@@ -33,6 +34,8 @@ export interface ReaderSettings {
   displayMode: DisplayMode
   activeTranslations: number[]
   showTranslation: boolean
+  /** Active tafsir book (M3) — must be a slug from TAFSIR_RESOURCES */
+  tafsirSlug: string
 }
 
 interface ReaderSettingsContextValue extends ReaderSettings {
@@ -47,6 +50,7 @@ interface ReaderSettingsContextValue extends ReaderSettings {
   setActiveTranslations: (ids: number[]) => void
   toggleTranslation: (id: number) => void
   setShowTranslation: (show: boolean) => void
+  setTafsirSlug: (slug: string) => void
   arabicFontSize: string
   translationFontSize: string
   arabicFontFamily: string
@@ -66,6 +70,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   displayMode: "verse",
   activeTranslations: DEFAULT_TRANSLATIONS,
   showTranslation: true,
+  tafsirSlug: DEFAULT_TAFSIR_SLUG,
 }
 
 function clampScale(n: number): FontScale {
@@ -129,6 +134,11 @@ function migrateSettings(raw: unknown): ReaderSettings {
       typeof s.showTranslation === "boolean"
         ? s.showTranslation
         : DEFAULT_SETTINGS.showTranslation,
+    // Pre-M3 payloads have no tafsirSlug; unknown slugs (removed books) reset
+    tafsirSlug:
+      typeof s.tafsirSlug === "string" && isTafsirSlug(s.tafsirSlug)
+        ? s.tafsirSlug
+        : DEFAULT_SETTINGS.tafsirSlug,
   }
 }
 
@@ -234,6 +244,14 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
     [setSettings],
   )
 
+  const setTafsirSlug = useCallback(
+    (tafsirSlug: string) =>
+      setSettings((p) =>
+        isTafsirSlug(tafsirSlug) ? { ...p, tafsirSlug } : p,
+      ),
+    [setSettings],
+  )
+
   return (
     <ReaderSettingsContext.Provider
       value={{
@@ -249,6 +267,7 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
         setActiveTranslations,
         toggleTranslation,
         setShowTranslation,
+        setTafsirSlug,
         arabicFontSize: ARABIC_FONT_SIZES[settings.arabicFontScale],
         translationFontSize: TRANSLATION_FONT_SIZES[settings.translationFontScale],
         arabicFontFamily: QURAN_FONT_FAMILY[settings.quranFont],

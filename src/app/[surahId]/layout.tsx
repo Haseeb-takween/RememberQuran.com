@@ -5,6 +5,7 @@ import { ReaderControls } from "@/components/reader/ReaderControls"
 import { KeyboardSurahNav } from "@/components/reader/KeyboardSurahNav"
 import { SurahReaderViewport } from "@/components/reader/SurahReaderViewport"
 import { AudioDockSpacer } from "@/components/audio/AudioDockSpacer"
+import { StudyPanel } from "@/components/study/StudyPanel"
 
 interface Props {
   children: React.ReactNode
@@ -21,6 +22,7 @@ export default function SurahLayout({ children }: Props) {
         <Suspense fallback={null}>{children}</Suspense>
         <SurahReaderViewport />
         <AudioDockSpacer />
+        <StudyPanel />
       </div>
     </SurahLayoutShell>
   )

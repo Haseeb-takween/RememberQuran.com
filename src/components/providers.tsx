@@ -7,6 +7,7 @@ import { ReaderSettingsProvider } from "@/context/ReaderSettingsContext"
 import { AudioPlayerProvider } from "@/context/AudioPlayerContext"
 import { UIProvider } from "@/context/UIContext"
 import { SurahContentProvider } from "@/context/SurahContentContext"
+import { StudyPanelProvider } from "@/context/StudyPanelContext"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -23,8 +24,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <SurahContentProvider>
               <ReaderSettingsProvider>
                 <AudioPlayerProvider>
-                  <RouteChangeEffect />
-                  {children}
+                  <StudyPanelProvider>
+                    <RouteChangeEffect />
+                    {children}
+                  </StudyPanelProvider>
                 </AudioPlayerProvider>
               </ReaderSettingsProvider>
             </SurahContentProvider>
