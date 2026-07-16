@@ -26,13 +26,16 @@ export async function SurahListPage() {
         </p>
       </header>
 
+      {/* dir="rtl" makes surahs flow right-to-left (mushaf order); each card
+          resets to ltr so its internal layout is unchanged */}
       <div
         className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3"
+        dir="rtl"
         role="list"
         aria-label="List of Surahs"
       >
         {chapters.map((chapter) => (
-          <div key={chapter.id} role="listitem">
+          <div key={chapter.id} role="listitem" dir="ltr">
             <SurahCard chapter={chapter} />
           </div>
         ))}
