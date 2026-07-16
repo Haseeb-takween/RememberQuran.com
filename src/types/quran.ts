@@ -31,6 +31,8 @@ export interface Word {
   text_uthmani: string
   /** QPC Hafs encoding — matches the KFGQPC UthmanicHafs font */
   qpc_uthmani_hafs?: string
+  /** Per-word tajweed markup — `<rule class=ham_wasl>ٱ</rule>…` with unquoted attrs */
+  text_uthmani_tajweed?: string
   translation: WordTranslation
   transliteration?: WordTranslation
 }

@@ -2,7 +2,9 @@
 
 import { useIsTouch } from "@/hooks/useIsTouch"
 import { useAudioPlayerActions } from "@/context/AudioPlayerContext"
+import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { getWordAudioUrl } from "@/lib/audioSources"
+import { parseTajweedWord } from "@/lib/tajweed"
 import type { Word } from "@/types/quran"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
@@ -20,6 +22,25 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
   const isTouch = useIsTouch()
   // Stable actions context — never re-renders words on playback state changes
   const actions = useAudioPlayerActions()
+  const { tajweedEnabled } = useReaderSettings()
+
+  // When tajweed is off this is the plain fallback (identical to pre-M3 behaviour)
+  const plainText = word.qpc_uthmani_hafs || word.text_uthmani
+
+  function wordContent() {
+    if (tajweedEnabled && word.text_uthmani_tajweed) {
+      return parseTajweedWord(word.text_uthmani_tajweed).map(({ text, rule }, i) =>
+        rule ? (
+          <span key={i} className={`tj-${rule}`}>
+            {text}
+          </span>
+        ) : (
+          text
+        ),
+      )
+    }
+    return plainText
+  }
 
   const triggerClass = cn(
     "inline-block cursor-pointer rounded-sm px-0.5 py-1",
@@ -42,7 +63,7 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
         <PopoverTrigger
           render={(props) => (
             <span {...props} className={triggerClass} tabIndex={0}>
-              {word.qpc_uthmani_hafs || word.text_uthmani}
+              {wordContent()}
             </span>
           )}
         />
@@ -74,7 +95,7 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
               }
             }}
           >
-            {word.qpc_uthmani_hafs || word.text_uthmani}
+            {wordContent()}
           </span>
         )}
       />

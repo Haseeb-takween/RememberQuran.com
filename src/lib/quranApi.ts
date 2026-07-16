@@ -40,7 +40,7 @@ export const TRANSLATION_NAMES: Record<number, string> = {
 }
 
 const WORD_FIELDS =
-  "text_uthmani,qpc_uthmani_hafs,translation,audio_url,transliteration"
+  "text_uthmani,qpc_uthmani_hafs,translation,audio_url,transliteration,text_uthmani_tajweed"
 const VERSE_FIELDS =
   "text_uthmani,qpc_uthmani_hafs,verse_key,verse_number,page_number,juz_number,hizb_number"
 

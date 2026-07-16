@@ -36,6 +36,8 @@ export interface ReaderSettings {
   showTranslation: boolean
   /** Active tafsir book (M3) — must be a slug from TAFSIR_RESOURCES */
   tafsirSlug: string
+  /** Tajweed colour coding toggle (M3) — default false */
+  tajweedEnabled: boolean
 }
 
 interface ReaderSettingsContextValue extends ReaderSettings {
@@ -51,6 +53,7 @@ interface ReaderSettingsContextValue extends ReaderSettings {
   toggleTranslation: (id: number) => void
   setShowTranslation: (show: boolean) => void
   setTafsirSlug: (slug: string) => void
+  setTajweedEnabled: (enabled: boolean) => void
   arabicFontSize: string
   translationFontSize: string
   arabicFontFamily: string
@@ -71,6 +74,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   activeTranslations: DEFAULT_TRANSLATIONS,
   showTranslation: true,
   tafsirSlug: DEFAULT_TAFSIR_SLUG,
+  tajweedEnabled: false,
 }
 
 function clampScale(n: number): FontScale {
@@ -139,6 +143,10 @@ function migrateSettings(raw: unknown): ReaderSettings {
       typeof s.tafsirSlug === "string" && isTafsirSlug(s.tafsirSlug)
         ? s.tafsirSlug
         : DEFAULT_SETTINGS.tafsirSlug,
+    tajweedEnabled:
+      typeof s.tajweedEnabled === "boolean"
+        ? s.tajweedEnabled
+        : DEFAULT_SETTINGS.tajweedEnabled,
   }
 }
 
@@ -252,6 +260,12 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
     [setSettings],
   )
 
+  const setTajweedEnabled = useCallback(
+    (tajweedEnabled: boolean) =>
+      setSettings((p) => ({ ...p, tajweedEnabled })),
+    [setSettings],
+  )
+
   return (
     <ReaderSettingsContext.Provider
       value={{
@@ -268,6 +282,7 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
         toggleTranslation,
         setShowTranslation,
         setTafsirSlug,
+        setTajweedEnabled,
         arabicFontSize: ARABIC_FONT_SIZES[settings.arabicFontScale],
         translationFontSize: TRANSLATION_FONT_SIZES[settings.translationFontScale],
         arabicFontFamily: QURAN_FONT_FAMILY[settings.quranFont],

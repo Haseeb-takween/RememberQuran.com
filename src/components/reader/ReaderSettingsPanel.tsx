@@ -6,6 +6,8 @@ import { FontTypeSelector } from "./FontTypeSelector"
 import { DisplayModeToggle } from "./DisplayModeToggle"
 import { TranslationSelector } from "./TranslationSelector"
 import { ReciterSettingsSelector } from "./ReciterSettingsSelector"
+import { TajweedToggle } from "./TajweedToggle"
+import { TajweedLegend } from "./TajweedLegend"
 
 function Section({
   title,
@@ -53,6 +55,13 @@ export function ReaderSettingsPanel() {
 
       <Section title="Translation">
         <TranslationSelector />
+      </Section>
+
+      <div className="h-px bg-border/60" />
+
+      <Section title="Tajweed">
+        <TajweedToggle />
+        <TajweedLegend />
       </Section>
     </div>
   )
