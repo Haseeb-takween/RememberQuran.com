@@ -1,6 +1,7 @@
 import type { SearchResponse } from "@/types/study"
 
-/** Promise-cache keyed `${q}:${page}` — evicted on failure so retries refetch */
+/** Session cache keyed `${q}:${page}` — failed loads and empty miss-caches are
+ * evicted so a retry after an API fix actually refetches. */
 const searchCache = new Map<string, Promise<SearchResponse>>()
 
 export async function searchQuran(q: string, page = 1): Promise<SearchResponse> {
@@ -9,16 +10,23 @@ export async function searchQuran(q: string, page = 1): Promise<SearchResponse> 
   if (cached) return cached
 
   const promise = (async () => {
+    // no-store: avoid the browser serving a stale empty 200 from before the
+    // response-shape fix (Cache-Control on /api/search is long-lived).
     const res = await fetch(
       `/api/search?q=${encodeURIComponent(q)}&size=20&page=${page}`,
-      { headers: { Accept: "application/json" } },
+      { headers: { Accept: "application/json" }, cache: "no-store" },
     )
     if (!res.ok) throw new Error(`Search failed (${res.status})`)
     return (await res.json()) as SearchResponse
   })()
 
   searchCache.set(key, promise)
-  promise.catch(() => searchCache.delete(key))
+  promise
+    .then((data) => {
+      // Don't pin empty responses — lets a corrected backend show up on retry
+      if (data.results.length === 0) searchCache.delete(key)
+    })
+    .catch(() => searchCache.delete(key))
   return promise
 }
 

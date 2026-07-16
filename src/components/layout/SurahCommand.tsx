@@ -77,6 +77,22 @@ export function SurahCommand({ chapters }: SurahCommandProps) {
         <CommandList>
           <CommandEmpty>No surah found.</CommandEmpty>
 
+          {showSearch && (
+            <CommandGroup heading="Search Quran">
+              <CommandItem
+                value={`search:${trimmedInput}`}
+                onSelect={() => handleSelect(`/search?q=${encodeURIComponent(trimmedInput)}`)}
+                className="flex items-center gap-2"
+              >
+                <Search className="size-3.5 shrink-0 text-muted-foreground" />
+                <span>Search Quran for</span>
+                <span className="font-medium text-foreground">
+                  &ldquo;{trimmedInput}&rdquo;
+                </span>
+              </CommandItem>
+            </CommandGroup>
+          )}
+
           {ayahMatch && (
             <CommandGroup heading="Go to ayah">
               <CommandItem
@@ -111,20 +127,6 @@ export function SurahCommand({ chapters }: SurahCommandProps) {
                   </span>
                 </CommandItem>
               ))}
-            </CommandGroup>
-          )}
-
-          {showSearch && (
-            <CommandGroup heading="Search">
-              <CommandItem
-                value={`search:${trimmedInput}`}
-                onSelect={() => handleSelect(`/search?q=${encodeURIComponent(trimmedInput)}`)}
-                className="flex items-center gap-2"
-              >
-                <Search className="size-3.5 shrink-0 text-muted-foreground" />
-                <span>Search Quran for</span>
-                <span className="font-medium text-foreground">"{trimmedInput}"</span>
-              </CommandItem>
             </CommandGroup>
           )}
         </CommandList>

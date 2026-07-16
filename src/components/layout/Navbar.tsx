@@ -3,27 +3,18 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Search, RadioTower } from "lucide-react"
+import { BookOpen, RadioTower, TextSearch } from "lucide-react"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
-import { useUI } from "@/context/UIContext"
 import { cn } from "@/lib/utils"
 
 const FOCUS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 
-function isMac() {
-  if (typeof window === "undefined") return false
-  return /mac/i.test(navigator.platform)
-}
-
 export function Navbar() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const { setCommandOpen } = useUI()
 
   useEffect(() => {
-    setMounted(true)
     const onScroll = () => setScrolled(window.scrollY > 4)
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
@@ -67,24 +58,19 @@ export function Navbar() {
             <RadioTower className="size-3.5" strokeWidth={1.75} />
             <span className="hidden sm:inline">Radio</span>
           </Link>
-          <button
-            type="button"
-            aria-label="Search surahs"
-            onClick={() => setCommandOpen(true)}
+          <Link
+            href="/search"
+            aria-label="Search the Quran"
             className={cn(
-              "flex h-9 items-center gap-1.5 rounded-md border border-border px-2.5",
+              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
               "text-xs text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground",
+              pathname === "/search" && "text-primary",
               FOCUS,
             )}
           >
-            <Search className="size-3.5" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Search</span>
-            {mounted && (
-              <kbd className="hidden rounded bg-muted px-1 py-0.5 text-[10px] font-medium sm:inline">
-                {isMac() ? "⌘K" : "Ctrl K"}
-              </kbd>
-            )}
-          </button>
+            <TextSearch className="size-3.5" strokeWidth={1.75} />
+            <span className="hidden sm:inline">Quran</span>
+          </Link>
           <ThemeToggle />
         </div>
       </div>
