@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { Search } from "lucide-react"
 import {
   CommandDialog,
   Command,
@@ -57,6 +58,8 @@ export function SurahCommand({ chapters }: SurahCommandProps) {
   }
 
   const ayahMatch = AYAH_KEY_RE.exec(input.trim())
+  const trimmedInput = input.trim()
+  const showSearch = !ayahMatch && trimmedInput.length >= 2
 
   return (
     <CommandDialog
@@ -108,6 +111,20 @@ export function SurahCommand({ chapters }: SurahCommandProps) {
                   </span>
                 </CommandItem>
               ))}
+            </CommandGroup>
+          )}
+
+          {showSearch && (
+            <CommandGroup heading="Search">
+              <CommandItem
+                value={`search:${trimmedInput}`}
+                onSelect={() => handleSelect(`/search?q=${encodeURIComponent(trimmedInput)}`)}
+                className="flex items-center gap-2"
+              >
+                <Search className="size-3.5 shrink-0 text-muted-foreground" />
+                <span>Search Quran for</span>
+                <span className="font-medium text-foreground">"{trimmedInput}"</span>
+              </CommandItem>
             </CommandGroup>
           )}
         </CommandList>

@@ -1,12 +1,19 @@
 "use client"
 
-import { Volume2 } from "lucide-react"
+import { Volume2, GraduationCap } from "lucide-react"
 import { useAudioPlayerActions } from "@/context/AudioPlayerContext"
+import { useStudyPanel } from "@/context/StudyPanelContext"
 import { getWordAudioUrl } from "@/lib/audioSources"
 import type { Word } from "@/types/quran"
 
-export function WordMeaningContent({ word }: { word: Word }) {
+interface WordMeaningContentProps {
+  word: Word
+  verseKey?: string
+}
+
+export function WordMeaningContent({ word, verseKey }: WordMeaningContentProps) {
   const actions = useAudioPlayerActions()
+  const { openWord } = useStudyPanel()
   const hasAudio = !!getWordAudioUrl(word)
 
   return (
@@ -26,17 +33,30 @@ export function WordMeaningContent({ word }: { word: Word }) {
           {word.transliteration.text}
         </span>
       )}
-      {hasAudio && actions && (
-        <button
-          type="button"
-          title="Hear this word"
-          aria-label="Hear this word"
-          onClick={() => actions.playWord(word)}
-          className="mt-0.5 flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Volume2 className="size-3.5" strokeWidth={1.75} />
-        </button>
-      )}
+      <div className="mt-0.5 flex items-center gap-1">
+        {hasAudio && actions && (
+          <button
+            type="button"
+            title="Hear this word"
+            aria-label="Hear this word"
+            onClick={() => actions.playWord(word)}
+            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Volume2 className="size-3.5" strokeWidth={1.75} />
+          </button>
+        )}
+        {verseKey && (
+          <button
+            type="button"
+            title="Word grammar"
+            aria-label="Show word grammar"
+            onClick={() => openWord(verseKey, word.position)}
+            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <GraduationCap className="size-3.5" strokeWidth={1.75} />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

@@ -7,12 +7,14 @@ interface ArabicLineProps {
   showEndGlyph?: boolean
   /** Word.position currently being recited — null/undefined when inactive */
   highlightedPosition?: number | null
+  verseKey?: string
 }
 
 export function ArabicLine({
   words,
   showEndGlyph = true,
   highlightedPosition = null,
+  verseKey,
 }: ArabicLineProps) {
   const visibleWords = (words ?? []).filter(
     (w) =>
@@ -30,6 +32,7 @@ export function ArabicLine({
             <ArabicWord
               word={word}
               isHighlighted={highlightedPosition === word.position}
+              verseKey={verseKey}
             />
           )}
           {i < visibleWords.length - 1 && " "}

@@ -42,6 +42,7 @@ function ReadingVerse({ verse, isTarget }: { verse: Verse; isTarget: boolean }) 
             <ArabicWord
               word={word}
               isHighlighted={highlightedPosition === word.position}
+              verseKey={verse.verse_key}
             />
             {i < words.length - 1 ? " " : null}
           </span>

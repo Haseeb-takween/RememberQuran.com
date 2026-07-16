@@ -81,6 +81,7 @@ export function AyahBlock({
           words={verse.words}
           showEndGlyph
           highlightedPosition={highlightedPosition}
+          verseKey={verse.verse_key}
         />
       </div>
     )
@@ -152,7 +153,7 @@ export function AyahBlock({
         </div>
       </div>
 
-      <ArabicLine words={verse.words} highlightedPosition={highlightedPosition} />
+      <ArabicLine words={verse.words} highlightedPosition={highlightedPosition} verseKey={verse.verse_key} />
 
       {showTranslation &&
         activeTranslations.map((t) => (

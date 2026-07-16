@@ -24,6 +24,7 @@ interface StudyPanelContextValue {
   target: StudyTarget | null
   openTafsir: (verseKey: string) => void
   openAsbab: (verseKey: string) => void
+  openWord: (verseKey: string, wordPosition: number) => void
   setView: (view: StudyView) => void
   /** Move the panel to the previous/next ayah, clamped to the surah bounds */
   navigateAyah: (delta: 1 | -1) => void
@@ -53,6 +54,10 @@ export function StudyPanelProvider({ children }: { children: ReactNode }) {
     setTarget({ view: "asbab", verseKey })
   }, [])
 
+  const openWord = useCallback((verseKey: string, wordPosition: number) => {
+    setTarget({ view: "word", verseKey, wordPosition })
+  }, [])
+
   const setView = useCallback((view: StudyView) => {
     setTarget((prev) => (prev ? { ...prev, view } : prev))
   }, [])
@@ -77,7 +82,7 @@ export function StudyPanelProvider({ children }: { children: ReactNode }) {
 
   return (
     <StudyPanelContext.Provider
-      value={{ target, openTafsir, openAsbab, setView, navigateAyah, close }}
+      value={{ target, openTafsir, openAsbab, openWord, setView, navigateAyah, close }}
     >
       {children}
     </StudyPanelContext.Provider>

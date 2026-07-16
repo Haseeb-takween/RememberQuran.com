@@ -16,9 +16,10 @@ interface ArabicWordProps {
   onWordClick?: (word: Word) => void
   isHighlighted?: boolean
   isPlaying?: boolean
+  verseKey?: string
 }
 
-export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
+export function ArabicWord({ word, isHighlighted = false, verseKey }: ArabicWordProps) {
   const isTouch = useIsTouch()
   // Stable actions context — never re-renders words on playback state changes
   const actions = useAudioPlayerActions()
@@ -68,7 +69,7 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
           )}
         />
         <PopoverContent side="top" className="w-auto p-3">
-          <WordMeaningContent word={word} />
+          <WordMeaningContent word={word} verseKey={verseKey} />
         </PopoverContent>
       </Popover>
     )
@@ -100,7 +101,7 @@ export function ArabicWord({ word, isHighlighted = false }: ArabicWordProps) {
         )}
       />
       <TooltipContent side="top">
-        <WordMeaningContent word={word} />
+        <WordMeaningContent word={word} verseKey={verseKey} />
       </TooltipContent>
     </Tooltip>
   )

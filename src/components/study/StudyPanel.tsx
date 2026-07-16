@@ -13,11 +13,12 @@ import {
 import { cn } from "@/lib/utils"
 import { TafsirView } from "./TafsirView"
 import { AsbabView } from "./AsbabView"
+import { WordDetailView } from "./WordDetailView"
 
-/** Tab registry — the "word" (morphology) view lands in Phase 5 */
 const VIEWS: { view: StudyView; label: string }[] = [
   { view: "tafsir", label: "Tafsir" },
   { view: "asbab", label: "Context" },
+  { view: "word", label: "Word" },
 ]
 
 const navBtn = cn(
@@ -108,21 +109,27 @@ export function StudyPanel() {
               </SheetDescription>
               {VIEWS.length > 1 && (
                 <div className="mt-3 flex items-center gap-1">
-                  {VIEWS.map(({ view, label }) => (
-                    <button
-                      key={view}
-                      type="button"
-                      onClick={() => setView(view)}
-                      className={cn(
-                        "rounded-md px-2.5 py-1 text-xs font-medium transition-colors duration-[120ms]",
-                        target.view === view
-                          ? "bg-accent text-foreground"
-                          : "text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  {VIEWS.map(({ view, label }) => {
+                    const disabled =
+                      view === "word" && target.wordPosition === undefined
+                    return (
+                      <button
+                        key={view}
+                        type="button"
+                        onClick={() => setView(view)}
+                        disabled={disabled}
+                        className={cn(
+                          "rounded-md px-2.5 py-1 text-xs font-medium transition-colors duration-[120ms]",
+                          target.view === view
+                            ? "bg-accent text-foreground"
+                            : "text-muted-foreground hover:text-foreground",
+                          disabled && "pointer-events-none opacity-30",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </header>
@@ -130,6 +137,12 @@ export function StudyPanel() {
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
               {target.view === "tafsir" && <TafsirView verseKey={target.verseKey} />}
               {target.view === "asbab" && <AsbabView verseKey={target.verseKey} />}
+              {target.view === "word" && target.wordPosition !== undefined && (
+                <WordDetailView
+                  verseKey={target.verseKey}
+                  wordPosition={target.wordPosition}
+                />
+              )}
             </div>
           </>
         )}
