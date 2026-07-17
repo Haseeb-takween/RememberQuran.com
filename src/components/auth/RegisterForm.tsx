@@ -54,7 +54,10 @@ export function RegisterForm() {
       const data = (await res.json().catch(() => ({}))) as { error?: string }
 
       if (!res.ok) {
+        // Re-enable the form so the user can correct the input and retry.
         setError(data.error ?? "Could not create your account.")
+        setPassword("")
+        setPending(false)
         return
       }
 
@@ -75,6 +78,7 @@ export function RegisterForm() {
       window.location.assign(next)
     } catch {
       setError("Something went wrong. Please try again.")
+      setPassword("")
       setPending(false)
     }
   }

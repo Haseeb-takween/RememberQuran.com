@@ -104,6 +104,7 @@ export function SettingsForms({
     })
     if (!result.ok) {
       setEmailStatus({ error: result.error ?? "Could not change email." })
+      setEmailPassword("")
       setEmailPending(false)
       return
     }
@@ -123,6 +124,7 @@ export function SettingsForms({
       setPasswordStatus({
         error: result.error ?? "Could not change password.",
       })
+      setCurrentPassword("")
       setPasswordPending(false)
       return
     }

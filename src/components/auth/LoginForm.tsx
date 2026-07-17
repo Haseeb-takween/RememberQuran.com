@@ -48,13 +48,19 @@ export function LoginForm() {
       })
 
       if (!result || result.error) {
+        // Keep the email, clear the password, and re-enable the form so the
+        // user can retry immediately.
         setError("Invalid email or password.")
+        setPassword("")
+        setPending(false)
         return
       }
 
+      // Leave `pending` on while the full-page redirect happens.
       redirectAfterAuth(next)
     } catch {
       setError("Something went wrong. Please try again.")
+      setPassword("")
       setPending(false)
     }
   }
