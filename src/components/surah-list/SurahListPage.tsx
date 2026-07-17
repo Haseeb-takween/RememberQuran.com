@@ -34,8 +34,14 @@ export async function SurahListPage() {
         role="list"
         aria-label="List of Surahs"
       >
-        {chapters.map((chapter) => (
-          <div key={chapter.id} role="listitem" dir="ltr">
+        {chapters.map((chapter, index) => (
+          <div
+            key={chapter.id}
+            role="listitem"
+            dir="ltr"
+            className="animate-fade-up"
+            style={{ animationDelay: `${Math.min(index * 10, 250)}ms` }}
+          >
             <SurahCard chapter={chapter} />
           </div>
         ))}

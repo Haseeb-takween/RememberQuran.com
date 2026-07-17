@@ -10,6 +10,7 @@ import { UIProvider } from "@/context/UIContext"
 import { SurahContentProvider } from "@/context/SurahContentContext"
 import { StudyPanelProvider } from "@/context/StudyPanelContext"
 import { SoftGateProvider } from "@/context/SoftGateContext"
+import { BookmarksProvider } from "@/context/BookmarksContext"
 import { SoftGateDialog } from "@/components/auth/SoftGateDialog"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
 
@@ -30,9 +31,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                   <AudioPlayerProvider>
                     <StudyPanelProvider>
                       <SoftGateProvider>
-                        <RouteChangeEffect />
-                        {children}
-                        <SoftGateDialog />
+                        <BookmarksProvider>
+                          <RouteChangeEffect />
+                          {children}
+                          <SoftGateDialog />
+                        </BookmarksProvider>
                       </SoftGateProvider>
                     </StudyPanelProvider>
                   </AudioPlayerProvider>

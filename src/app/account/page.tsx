@@ -23,7 +23,7 @@ const links = [
     label: "Bookmarks",
     description: "Saved ayahs and collections",
     icon: Bookmark,
-    soon: true,
+    soon: false,
   },
   {
     href: "/account/notes",
@@ -105,7 +105,7 @@ export default async function AccountPage() {
               ) : (
                 <Link
                   href={href}
-                  className="flex items-start gap-3 py-4 transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex items-start gap-3 border-l-2 border-l-transparent py-4 pl-3 transition-all duration-200 hover:border-l-primary hover:bg-accent/40 hover:pl-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {row}
                 </Link>

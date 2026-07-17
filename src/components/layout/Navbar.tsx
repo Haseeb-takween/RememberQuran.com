@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, RadioTower, TextSearch } from "lucide-react"
+import { RadioTower, TextSearch } from "lucide-react"
 import { AuthNav } from "@/components/auth/AuthNav"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
+import { LogoWordmark } from "@/components/layout/Logo"
 import { cn } from "@/lib/utils"
 
 const FOCUS =
@@ -34,15 +35,11 @@ export function Navbar() {
           href="/"
           aria-label="RememberQuran — home"
           className={cn(
-            "mr-auto flex items-center gap-2 rounded-sm",
-            "text-foreground transition-colors duration-150 hover:text-foreground/80",
+            "mr-auto rounded-sm transition-opacity duration-150 hover:opacity-80",
             FOCUS,
           )}
         >
-          <BookOpen className="size-5 text-primary" strokeWidth={1.75} />
-          <span className="font-medium tracking-tight">
-            Remember<span className="text-primary">Quran</span>
-          </span>
+          <LogoWordmark size="md" />
         </Link>
 
         <div className="flex items-center gap-1">

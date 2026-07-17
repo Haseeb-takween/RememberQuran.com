@@ -1,16 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Bookmark, BookOpen, Copy, Share2, MoreHorizontal, Check, ScrollText } from "lucide-react"
+import { BookOpen, Copy, Share2, MoreHorizontal, Check, ScrollText } from "lucide-react"
 import type { Verse } from "@/types/quran"
 import type { DisplayMode } from "@/context/ReaderSettingsContext"
 import { PlayAyahButton } from "@/components/audio/PlayAyahButton"
 import { useStudyPanel } from "@/context/StudyPanelContext"
-import { useSoftGate } from "@/context/SoftGateContext"
 import { hasAsbab } from "@/lib/asbabIndex"
 import { useHighlightedWord } from "@/lib/playbackStore"
-import { useSession } from "next-auth/react"
 import { ArabicLine } from "./ArabicLine"
+import { BookmarkButton } from "./BookmarkButton"
 import { AyahNumber } from "./AyahNumber"
 import { TranslationBlock } from "./TranslationBlock"
 import { cn } from "@/lib/utils"
@@ -25,7 +24,8 @@ interface AyahBlockProps {
 
 const metaBtn = cn(
   "flex size-7 items-center justify-center rounded-md",
-  "text-muted-foreground/50 transition-colors duration-[120ms]",
+  "text-muted-foreground/40 transition-colors duration-[120ms]",
+  "group-hover:text-muted-foreground/70",
   "hover:bg-accent hover:text-foreground",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
   "disabled:opacity-30 disabled:pointer-events-none",
@@ -40,20 +40,9 @@ export function AyahBlock({
 }: AyahBlockProps) {
   const [copied, setCopied] = useState(false)
   const { openTafsir, openAsbab } = useStudyPanel()
-  const { requireAuth } = useSoftGate()
-  const { data: session, status } = useSession()
   const chapterId = Number(verse.verse_key.split(":")[0])
   // Null for every verse except the one being recited — no re-renders while idle
   const highlightedPosition = useHighlightedWord(verse.verse_key)
-
-  function handleBookmark() {
-    if (status === "loading") return
-    if (!session?.user) {
-      requireAuth("bookmark")
-      return
-    }
-    // Bookmark save API is next — auth gate is live for guests
-  }
 
   const activeTranslations = verse.translations.filter((t) =>
     activeTranslationIds.includes(t.resource_id),
@@ -106,14 +95,14 @@ export function AyahBlock({
       data-slot="study-panel"
       data-verse-key={verse.verse_key}
       className={cn(
-        "scroll-mt-28 px-1 py-7 transition-colors duration-[1500ms]",
+        "group scroll-mt-28 px-1 py-7 transition-colors duration-[1500ms]",
         isTarget && "bg-primary/5",
       )}
     >
       {/* Meta bar — quran.com TranslationView TopActions pattern */}
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <AyahNumber number={verse.verse_number} />
+          <AyahNumber number={verse.verse_number} isTarget={isTarget} />
           <PlayAyahButton
             chapterId={chapterId}
             verseNumber={verse.verse_number}
@@ -140,14 +129,11 @@ export function AyahBlock({
               <ScrollText className="size-3.5" strokeWidth={1.75} />
             </button>
           )}
-          <button
-            type="button"
-            title="Bookmark"
-            onClick={handleBookmark}
+          <BookmarkButton
+            verseKey={verse.verse_key}
             className={metaBtn}
-          >
-            <Bookmark className="size-3.5" strokeWidth={1.75} />
-          </button>
+            iconClassName="size-3.5"
+          />
         </div>
         <div className="flex items-center gap-0.5">
           <button

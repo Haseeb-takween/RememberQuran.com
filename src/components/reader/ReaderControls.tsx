@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import {
-  Bookmark,
   Play,
   Pause,
   Loader2,
@@ -21,8 +20,6 @@ import { useUI } from "@/context/UIContext"
 import { useAudioPlayer } from "@/context/AudioPlayerContext"
 import { useSurahContent } from "@/context/SurahContentContext"
 import { useChapterMeta } from "@/context/ChaptersContext"
-import { useSoftGate } from "@/context/SoftGateContext"
-import { useSession } from "next-auth/react"
 import { ReaderSettingsPanel } from "./ReaderSettingsPanel"
 import { SurahPickerTrigger } from "./SurahPickerTrigger"
 import { cn } from "@/lib/utils"
@@ -47,8 +44,6 @@ export function ReaderControls() {
   const { mobileNavOpen, setMobileNavOpen, sidebarOpen, toggleSidebar } = useUI()
   const { chapter, pendingSurahId, isLoading } = useSurahContent()
   const player = useAudioPlayer()
-  const { requireAuth } = useSoftGate()
-  const { data: session, status } = useSession()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -111,18 +106,6 @@ export function ReaderControls() {
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5">
-            <button
-              type="button"
-              title="Bookmark"
-              onClick={() => {
-                if (status === "loading") return
-                if (!session?.user) requireAuth("bookmark")
-              }}
-              className={iconBtn}
-            >
-              <Bookmark className="size-4" strokeWidth={1.75} />
-            </button>
-
             <button
               type="button"
               title={isPlayingThis ? "Pause" : "Play surah"}
