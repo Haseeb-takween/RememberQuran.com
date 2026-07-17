@@ -1,0 +1,73 @@
+import { compare, hash } from "bcryptjs"
+import { auth } from "@/auth"
+import { privateJson } from "@/lib/auth/api-response"
+import { validatePassword } from "@/lib/auth/credentials"
+import { connectToDatabase } from "@/lib/db"
+import { User } from "@/lib/models/User"
+
+export const runtime = "nodejs"
+
+export async function PATCH(request: Request) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return privateJson({ error: "Unauthorized." }, 401)
+  }
+
+  let body: {
+    currentPassword?: unknown
+    newPassword?: unknown
+    confirmPassword?: unknown
+  }
+  try {
+    body = (await request.json()) as typeof body
+  } catch {
+    return privateJson({ error: "Invalid JSON body." }, 400)
+  }
+
+  if (typeof body.currentPassword !== "string") {
+    return privateJson({ error: "Current password is required." }, 400)
+  }
+
+  const newPassword = validatePassword(body.newPassword)
+  if (!newPassword.success) {
+    return privateJson({ error: newPassword.error }, 400)
+  }
+
+  if (
+    typeof body.confirmPassword !== "string" ||
+    body.confirmPassword !== newPassword.password
+  ) {
+    return privateJson({ error: "New passwords do not match." }, 400)
+  }
+
+  await connectToDatabase()
+  const user = await User.findById(session.user.id)
+    .select("+passwordHash")
+    .exec()
+
+  if (!user) return privateJson({ error: "Account not found." }, 404)
+
+  const correctPassword = await compare(
+    body.currentPassword,
+    user.passwordHash,
+  )
+  if (!correctPassword) {
+    return privateJson({ error: "Current password is incorrect." }, 400)
+  }
+
+  const unchanged = await compare(newPassword.password, user.passwordHash)
+  if (unchanged) {
+    return privateJson(
+      { error: "Choose a password different from your current one." },
+      400,
+    )
+  }
+
+  user.passwordHash = await hash(newPassword.password, 12)
+  user.passwordResetToken = null
+  user.passwordResetExpires = null
+  user.passwordResetRequestedAt = null
+  await user.save()
+
+  return privateJson({ ok: true, reauthenticate: true })
+}
