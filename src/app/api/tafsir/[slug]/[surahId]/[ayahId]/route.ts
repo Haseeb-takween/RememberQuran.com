@@ -87,7 +87,11 @@ export async function GET(_request: Request, context: RouteContext) {
       slug,
       resourceName: tafsir?.resource_name ?? resource?.name ?? slug,
       text: sanitizeTafsirHtml(tafsir?.text ?? ""),
-      coveredKeys: Object.keys(tafsir?.verses ?? {}),
+      coveredKeys: Object.keys(tafsir?.verses ?? {}).sort((a, b) => {
+        const [aSurah, aAyah] = a.split(":").map(Number)
+        const [bSurah, bAyah] = b.split(":").map(Number)
+        return aSurah !== bSurah ? aSurah - bSurah : aAyah - bAyah
+      }),
     }
 
     return NextResponse.json(payload, {
