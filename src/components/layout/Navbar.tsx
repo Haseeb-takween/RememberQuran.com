@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BookOpen, RadioTower, TextSearch } from "lucide-react"
+import { AuthNav } from "@/components/auth/AuthNav"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { cn } from "@/lib/utils"
 
@@ -71,6 +72,7 @@ export function Navbar() {
             <TextSearch className="size-3.5" strokeWidth={1.75} />
             <span className="hidden sm:inline">Quran</span>
           </Link>
+          <AuthNav />
           <ThemeToggle />
         </div>
       </div>

@@ -6,8 +6,10 @@ import type { Verse } from "@/types/quran"
 import type { DisplayMode } from "@/context/ReaderSettingsContext"
 import { PlayAyahButton } from "@/components/audio/PlayAyahButton"
 import { useStudyPanel } from "@/context/StudyPanelContext"
+import { useSoftGate } from "@/context/SoftGateContext"
 import { hasAsbab } from "@/lib/asbabIndex"
 import { useHighlightedWord } from "@/lib/playbackStore"
+import { useSession } from "next-auth/react"
 import { ArabicLine } from "./ArabicLine"
 import { AyahNumber } from "./AyahNumber"
 import { TranslationBlock } from "./TranslationBlock"
@@ -38,9 +40,20 @@ export function AyahBlock({
 }: AyahBlockProps) {
   const [copied, setCopied] = useState(false)
   const { openTafsir, openAsbab } = useStudyPanel()
+  const { requireAuth } = useSoftGate()
+  const { data: session, status } = useSession()
   const chapterId = Number(verse.verse_key.split(":")[0])
   // Null for every verse except the one being recited — no re-renders while idle
   const highlightedPosition = useHighlightedWord(verse.verse_key)
+
+  function handleBookmark() {
+    if (status === "loading") return
+    if (!session?.user) {
+      requireAuth("bookmark")
+      return
+    }
+    // Bookmark save API is next — auth gate is live for guests
+  }
 
   const activeTranslations = verse.translations.filter((t) =>
     activeTranslationIds.includes(t.resource_id),
@@ -127,7 +140,12 @@ export function AyahBlock({
               <ScrollText className="size-3.5" strokeWidth={1.75} />
             </button>
           )}
-          <button type="button" disabled title="Bookmark (Milestone 4)" className={metaBtn}>
+          <button
+            type="button"
+            title="Bookmark"
+            onClick={handleBookmark}
+            className={metaBtn}
+          >
             <Bookmark className="size-3.5" strokeWidth={1.75} />
           </button>
         </div>
