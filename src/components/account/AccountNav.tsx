@@ -2,11 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutGrid, Settings2 } from "lucide-react"
+import { Bookmark, LayoutGrid, NotebookPen, Settings2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const links = [
   { href: "/account", label: "Overview", icon: LayoutGrid },
+  { href: "/account/bookmarks", label: "Bookmarks", icon: Bookmark },
+  { href: "/account/notes", label: "Notes", icon: NotebookPen },
   { href: "/account/settings", label: "Settings", icon: Settings2 },
 ]
 

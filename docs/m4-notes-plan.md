@@ -1,6 +1,6 @@
 # M4 Phase 2 — Personal Notes Implementation Plan
 
-**Status:** Plan only — do not implement until approved  
+**Status:** Implemented (N0–N5) — regression smoke as needed  
 **Depends on:** Phase 0 (Auth.js, session helpers, soft-gate) + Phase 1 (bookmarks patterns) — **done**  
 **Done when:** Logged-in user can create / edit / delete a plain-text note on any ayah, see a note indicator in the reader, and jump back from `/account/notes`  
 **Sources:** Brief §3.4.3 · `docs/plan.md` §10.3 · `docs/m4-implementation-plan.md` §3.4.3 · existing `Note` model

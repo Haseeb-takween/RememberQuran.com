@@ -11,6 +11,7 @@ import { SurahContentProvider } from "@/context/SurahContentContext"
 import { StudyPanelProvider } from "@/context/StudyPanelContext"
 import { SoftGateProvider } from "@/context/SoftGateContext"
 import { BookmarksProvider } from "@/context/BookmarksContext"
+import { NotesProvider } from "@/context/NotesContext"
 import { SoftGateDialog } from "@/components/auth/SoftGateDialog"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
 
@@ -32,9 +33,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <StudyPanelProvider>
                       <SoftGateProvider>
                         <BookmarksProvider>
-                          <RouteChangeEffect />
-                          {children}
-                          <SoftGateDialog />
+                          <NotesProvider>
+                            <RouteChangeEffect />
+                            {children}
+                            <SoftGateDialog />
+                          </NotesProvider>
                         </BookmarksProvider>
                       </SoftGateProvider>
                     </StudyPanelProvider>

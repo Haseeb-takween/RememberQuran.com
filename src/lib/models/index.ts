@@ -17,7 +17,6 @@ export {
 } from "./Bookmark"
 export {
   Note,
-  NOTE_TEXT_MAX_LENGTH,
   type NoteDocument,
   type NoteModel,
 } from "./Note"

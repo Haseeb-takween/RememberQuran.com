@@ -30,7 +30,7 @@ const links = [
     label: "Notes",
     description: "Private notes on ayahs",
     icon: NotebookPen,
-    soon: true,
+    soon: false,
   },
   {
     href: "/account/progress",

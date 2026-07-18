@@ -37,14 +37,14 @@ export function SoftGateDialog() {
 
         <div className="flex flex-col gap-2 pt-1">
           <Link
-            href="/login?next=/account"
+            href={`/login?next=${encodeURIComponent(state.nextPath)}`}
             onClick={close}
             className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full")}
           >
             Sign in
           </Link>
           <Link
-            href="/register?next=/account"
+            href={`/register?next=${encodeURIComponent(state.nextPath)}`}
             onClick={close}
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
           >

@@ -1,6 +1,5 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose"
-
-const NOTE_MAX_LENGTH = 10_000
+import { NOTE_TEXT_MAX_LENGTH } from "@/lib/notes/text"
 
 const noteSchema = new Schema(
   {
@@ -20,7 +19,7 @@ const noteSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      maxlength: NOTE_MAX_LENGTH,
+      maxlength: NOTE_TEXT_MAX_LENGTH,
     },
   },
   {
@@ -30,8 +29,6 @@ const noteSchema = new Schema(
 )
 
 noteSchema.index({ userId: 1, verseKey: 1 }, { unique: true })
-
-export const NOTE_TEXT_MAX_LENGTH = NOTE_MAX_LENGTH
 
 export type NoteDocument = InferSchemaType<typeof noteSchema> & {
   _id: mongoose.Types.ObjectId

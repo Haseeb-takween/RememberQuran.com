@@ -10,6 +10,7 @@ import { hasAsbab } from "@/lib/asbabIndex"
 import { useHighlightedWord } from "@/lib/playbackStore"
 import { ArabicLine } from "./ArabicLine"
 import { BookmarkButton } from "./BookmarkButton"
+import { NoteButton } from "./NoteButton"
 import { AyahNumber } from "./AyahNumber"
 import { TranslationBlock } from "./TranslationBlock"
 import { cn } from "@/lib/utils"
@@ -130,6 +131,11 @@ export function AyahBlock({
             </button>
           )}
           <BookmarkButton
+            verseKey={verse.verse_key}
+            className={metaBtn}
+            iconClassName="size-3.5"
+          />
+          <NoteButton
             verseKey={verse.verse_key}
             className={metaBtn}
             iconClassName="size-3.5"
