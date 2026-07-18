@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ChevronsUpDown, Search } from "lucide-react"
+import { ChevronDown, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -94,7 +94,7 @@ export function AyahPicker({ value, onChange, className }: AyahPickerProps) {
             </span>
           ) : null}
         </span>
-        <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+        <ChevronDown className="size-4 shrink-0 opacity-50" />
       </Button>
 
       <Dialog open={open} onOpenChange={resetDialog}>

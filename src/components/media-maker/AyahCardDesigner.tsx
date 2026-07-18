@@ -124,6 +124,7 @@ export function AyahCardDesigner({
     await document.fonts.ready
 
     const nodeWidth = cardRef.current.offsetWidth
+    if (nodeWidth <= 0) throw new Error("Card has no measurable width")
     return toPng(cardRef.current, {
       cacheBust: true,
       pixelRatio: 1200 / nodeWidth,
