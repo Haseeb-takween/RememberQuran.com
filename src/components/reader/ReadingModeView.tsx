@@ -25,6 +25,7 @@ function ReadingVerse({ verse, isTarget }: { verse: Verse; isTarget: boolean }) 
   return (
     <span
       id={`ayah-${verse.verse_number}`}
+      data-verse-key={verse.verse_key}
       className={cn(
         "scroll-mt-28",
         isTarget && "rounded-sm bg-primary/8",

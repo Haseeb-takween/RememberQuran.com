@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { AccountNav } from "@/components/account/AccountNav"
 import { SettingsForms } from "@/components/account/SettingsForms"
 import { connectToDatabase } from "@/lib/db"
 import { User } from "@/lib/models/User"
@@ -26,8 +25,7 @@ export default async function SettingsPage() {
   if (!user) redirect("/login?next=/account/settings")
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <AccountNav />
+    <div className="max-w-3xl">
       <div className="mb-7">
         <p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">
           Your account

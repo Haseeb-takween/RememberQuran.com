@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { BookOpen, Copy, Share2, MoreHorizontal, Check, ScrollText } from "lucide-react"
+import Link from "next/link"
+import { BookOpen, Copy, Share2, Check, ScrollText, ImageIcon } from "lucide-react"
 import type { Verse } from "@/types/quran"
 import type { DisplayMode } from "@/context/ReaderSettingsContext"
 import { PlayAyahButton } from "@/components/audio/PlayAyahButton"
@@ -75,6 +76,7 @@ export function AyahBlock({
     return (
       <div
         id={`ayah-${verse.verse_number}`}
+        data-verse-key={verse.verse_key}
         className={cn(
           "scroll-mt-28 py-1 transition-colors duration-[1500ms]",
           isTarget && "bg-primary/5",
@@ -157,9 +159,14 @@ export function AyahBlock({
           <button type="button" title="Share" onClick={shareAyah} className={metaBtn}>
             <Share2 className="size-3.5" strokeWidth={1.75} />
           </button>
-          <button type="button" title="More options" className={metaBtn}>
-            <MoreHorizontal className="size-3.5" strokeWidth={1.75} />
-          </button>
+          <Link
+            href={`/media-maker?verse=${encodeURIComponent(verse.verse_key)}`}
+            title="Create ayah card"
+            aria-label={`Create image card for ${verse.verse_key}`}
+            className={metaBtn}
+          >
+            <ImageIcon className="size-3.5" strokeWidth={1.75} />
+          </Link>
         </div>
       </div>
 

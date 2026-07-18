@@ -3,7 +3,27 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
-import { LogOut, UserRound } from "lucide-react"
+import { useTheme } from "next-themes"
+import {
+  Check,
+  ChevronDown,
+  LayoutGrid,
+  LogOut,
+  Moon,
+  Settings2,
+  Sun,
+  UserRound,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
 const FOCUS =
@@ -15,6 +35,7 @@ const navLink =
 export function AuthNav() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
+  const { resolvedTheme, setTheme } = useTheme()
 
   if (status === "loading") {
     return (
@@ -39,29 +60,65 @@ export function AuthNav() {
     session.user.email?.split("@")[0] ||
     "Account"
 
+  const isDark = resolvedTheme === "dark"
+
   return (
-    <div className="flex items-center gap-0.5">
-      <Link
-        href="/account"
-        title={session.user.email ?? "Account"}
-        className={cn(
-          navLink,
-          pathname.startsWith("/account") && "text-primary",
-          FOCUS,
-        )}
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            className={cn(
+              "h-9 gap-1.5 px-2.5 text-xs text-muted-foreground",
+              pathname.startsWith("/account") && "text-primary",
+            )}
+          />
+        }
       >
-        <UserRound className="size-3.5" strokeWidth={1.75} />
-        <span className="hidden max-w-[7rem] truncate sm:inline">{label}</span>
-      </Link>
-      <button
-        type="button"
-        title="Sign out"
-        aria-label="Sign out"
-        onClick={() => signOut({ callbackUrl: "/" })}
-        className={cn(navLink, FOCUS)}
-      >
-        <LogOut className="size-3.5" strokeWidth={1.75} />
-      </button>
-    </div>
+        <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <UserRound />
+        </span>
+        <span className="hidden max-w-28 truncate md:inline">{label}</span>
+        <ChevronDown className="hidden md:block" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex flex-col gap-0.5 px-2 py-1.5">
+            <span className="truncate text-sm text-foreground">{label}</span>
+            <span className="truncate font-normal">{session.user.email}</span>
+          </DropdownMenuLabel>
+          <DropdownMenuItem render={<Link href="/account" />}>
+            <LayoutGrid />
+            Account overview
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href="/account/settings" />}>
+            <Settings2 />
+            Settings
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+          <DropdownMenuItem
+            disabled={!resolvedTheme}
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+          >
+            {isDark ? <Sun /> : <Moon />}
+            {isDark ? "Use light theme" : "Use dark theme"}
+            <Check className="ml-auto opacity-0" aria-hidden />
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => signOut({ callbackUrl: "/" })}
+          >
+            <LogOut />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

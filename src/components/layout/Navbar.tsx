@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { RadioTower, TextSearch } from "lucide-react"
+import { BookOpenText, Headphones, ImagePlus, Search } from "lucide-react"
 import { AuthNav } from "@/components/auth/AuthNav"
-import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { LogoWordmark } from "@/components/layout/Logo"
 import { cn } from "@/lib/utils"
 
@@ -26,7 +25,7 @@ export function Navbar() {
     <header
       className={cn(
         "sticky top-0 z-40 w-full bg-background/95 backdrop-blur-sm",
-        "border-b transition-[border-color] duration-[150ms] ease-out",
+        "border-b transition-[border-color] duration-150 ease-out",
         scrolled ? "border-border" : "border-transparent",
       )}
     >
@@ -44,33 +43,58 @@ export function Navbar() {
 
         <div className="flex items-center gap-1">
           <Link
+            href="/"
+            aria-label="Browse the Quran"
+            className={cn(
+              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
+              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
+              (pathname === "/" || /^\/\d+/.test(pathname)) && "text-primary",
+              FOCUS,
+            )}
+          >
+            <BookOpenText className="size-3.5" strokeWidth={1.75} />
+            <span className="hidden sm:inline">Quran</span>
+          </Link>
+          <Link
             href="/radio"
             aria-label="Quran Radio"
             className={cn(
               "flex h-9 items-center gap-1.5 rounded-md px-2.5",
-              "text-xs text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground",
+              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
               pathname === "/radio" && "text-primary",
               FOCUS,
             )}
           >
-            <RadioTower className="size-3.5" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Radio</span>
+            <Headphones className="size-3.5" strokeWidth={1.75} />
+            <span className="hidden sm:inline">Listen</span>
+          </Link>
+          <Link
+            href="/media-maker"
+            aria-label="Create an ayah card"
+            className={cn(
+              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
+              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
+              pathname === "/media-maker" && "text-primary",
+              FOCUS,
+            )}
+          >
+            <ImagePlus className="size-3.5" strokeWidth={1.75} />
+            <span className="hidden sm:inline">Create</span>
           </Link>
           <Link
             href="/search"
             aria-label="Search the Quran"
             className={cn(
               "flex h-9 items-center gap-1.5 rounded-md px-2.5",
-              "text-xs text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground",
+              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
               pathname === "/search" && "text-primary",
               FOCUS,
             )}
           >
-            <TextSearch className="size-3.5" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Quran</span>
+            <Search className="size-3.5" strokeWidth={1.75} />
+            <span className="sr-only">Search</span>
           </Link>
           <AuthNav />
-          <ThemeToggle />
         </div>
       </div>
     </header>

@@ -6,6 +6,7 @@ import { Play, Pause, Loader2, Check, AudioLines, ArrowRight } from "lucide-reac
 import { useAudioPlayer } from "@/context/AudioPlayerContext"
 import { usePlaybackVerseKey } from "@/lib/playbackStore"
 import { RECITERS, getReciter } from "@/lib/audioSources"
+import { SurahCombobox } from "@/components/quran/SurahCombobox"
 import type { Chapter } from "@/types/quran"
 import { cn } from "@/lib/utils"
 
@@ -21,14 +22,14 @@ function NowPlaying({ chapterName }: { chapterName: string | null }) {
   return (
     <Link
       href={`/${surahId}/${ayahId}`}
-      className="group flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span>
         Now playing: {chapterName ?? `Surah ${surahId}`} ·{" "}
         <span className="tabular-nums">ayah {ayahId}</span>
       </span>
       <ArrowRight
-        className="size-3.5 transition-transform duration-[120ms] group-hover:translate-x-0.5"
+        className="size-3.5 transition-transform duration-120 group-hover:translate-x-0.5"
         strokeWidth={1.75}
       />
     </Link>
@@ -52,9 +53,14 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
     }
   }
 
+  function handleSurahChange(id: number) {
+    setStartChapterId(id)
+    // Mid-play selection switches the radio immediately (RQ-09)
+    if (isRadio) player.startRadio(id)
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-8">
-      {/* Main control */}
       <div className="flex flex-col items-center gap-4">
         <button
           type="button"
@@ -63,7 +69,7 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
           className={cn(
             "flex size-20 items-center justify-center rounded-full",
             "bg-primary text-primary-foreground shadow-lg",
-            "transition-all duration-[150ms] hover:scale-[1.03] hover:bg-primary/90 active:scale-100",
+            "transition-all duration-150 hover:scale-[1.03] hover:bg-primary/90 active:scale-100",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4",
           )}
         >
@@ -79,7 +85,7 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
         {isRadio ? (
           <NowPlaying chapterName={player.chapterName} />
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground">
             Continuous recitation, surah after surah — from your chosen
             starting point to the end of the Quran and around again.
           </p>
@@ -89,56 +95,42 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
           <button
             type="button"
             onClick={player.retry}
-            className="rounded-md bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors duration-[120ms] hover:bg-destructive/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-md bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors duration-120 hover:bg-destructive/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {player.errorMessage ?? "Couldn't load audio"} — tap to retry
           </button>
         )}
       </div>
 
-      {/* Start point */}
-      <section className="space-y-2">
+      <section className="flex flex-col gap-2">
         <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Start from
         </h2>
-        <select
-          aria-label="Starting surah"
+        <SurahCombobox
+          chapters={chapters}
           value={startChapterId}
-          onChange={(e) => {
-            const id = Number(e.target.value)
-            setStartChapterId(id)
-            // Mid-play selection switches the radio immediately (RQ-09)
-            if (isRadio) player.startRadio(id)
-          }}
-          className={cn(
-            "w-full appearance-none rounded-md border border-border bg-background px-3 py-2 text-sm",
-            "transition-colors duration-[120ms] hover:bg-accent",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          )}
-        >
-          {chapters.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.id}. {c.name_simple}
-            </option>
-          ))}
-        </select>
+          onChange={handleSurahChange}
+        />
         {isRadio && player.chapterId !== null && (
           <button
             type="button"
             onClick={() => setStartChapterId(player.chapterId ?? 1)}
-            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+            className="rounded-sm text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Use current surah ({player.chapterName ?? player.chapterId})
           </button>
         )}
       </section>
 
-      {/* Reciter */}
-      <section className="space-y-2">
+      <section className="flex flex-col gap-2">
         <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Reciter
         </h2>
-        <div role="radiogroup" aria-label="Reciter" className="grid grid-cols-1 gap-1.5">
+        <div
+          role="radiogroup"
+          aria-label="Reciter"
+          className="grid grid-cols-1 gap-1.5"
+        >
           {RECITERS.map((reciter) => {
             const active = reciter.id === currentReciter.id
             return (
@@ -150,7 +142,7 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
                 onClick={() => player.setReciter(reciter.id)}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left",
-                  "transition-colors duration-[120ms]",
+                  "transition-colors duration-120",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   active
                     ? "border-primary/25 bg-primary/10 text-primary"

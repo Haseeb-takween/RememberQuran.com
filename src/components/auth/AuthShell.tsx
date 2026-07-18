@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { motion } from "motion/react"
-import { BookOpen } from "lucide-react"
 import type { ReactNode } from "react"
+import { LogoWordmark } from "@/components/layout/Logo"
 
 interface AuthShellProps {
   title: string
@@ -51,10 +51,7 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
             href="/"
             className="mb-8 inline-flex items-center gap-2 rounded-sm text-foreground transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <BookOpen className="size-6 text-primary" strokeWidth={1.75} />
-            <span className="text-xl font-medium tracking-tight">
-              Remember<span className="text-primary">Quran</span>
-            </span>
+            <LogoWordmark size="lg" />
           </Link>
 
           <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-[2rem]">

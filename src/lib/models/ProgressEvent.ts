@@ -41,6 +41,8 @@ const progressEventSchema = new Schema(
 
 progressEventSchema.index({ userId: 1, date: 1 })
 progressEventSchema.index({ userId: 1, surah: 1 })
+/** One upsertable row per user / surah / UTC day */
+progressEventSchema.index({ userId: 1, surah: 1, date: 1 }, { unique: true })
 
 export type ProgressEventDocument = InferSchemaType<
   typeof progressEventSchema

@@ -8,6 +8,7 @@ import { usePlaybackVerseKey, useVerseScrollRequest } from "@/lib/playbackStore"
 import { BismillahHeader } from "./BismillahHeader"
 import { AyahBlock } from "./AyahBlock"
 import { ReadingModeView } from "./ReadingModeView"
+import { ProgressTracker } from "./ProgressTracker"
 
 interface QuranReaderProps {
   chapter: Chapter
@@ -103,7 +104,9 @@ export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps)
   }, [activePlaybackKey, chapter.id, shouldReduceMotion])
 
   return (
-    <article
+    <>
+      <ProgressTracker surahId={chapter.id} />
+      <article
       aria-label={`Surah ${chapter.name_simple}`}
       aria-busy={false}
       className="mx-auto max-w-6xl px-6 py-8 sm:px-10 sm:py-10"
@@ -160,5 +163,6 @@ export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps)
         </div>
       )}
     </article>
+    </>
   )
 }
