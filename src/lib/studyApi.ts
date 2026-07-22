@@ -15,6 +15,34 @@ export const TAFSIR_RESOURCES: TafsirResource[] = [
     author: "Hafiz Ibn Kathir",
     language: "english",
   },
+  {
+    id: 168,
+    slug: "en-tafsir-maarif-ul-quran",
+    name: "Ma'arif al-Qur'an",
+    author: "Mufti Muhammad Shafi",
+    language: "english",
+  },
+  {
+    id: 817,
+    slug: "tazkirul-quran-en",
+    name: "Tazkirul Quran",
+    author: "Maulana Wahiduddin Khan",
+    language: "english",
+  },
+  {
+    id: 91,
+    slug: "ar-tafseer-al-saddi",
+    name: "Al-Sa'di",
+    author: "Abdur-Rahman As-Sa'di",
+    language: "arabic",
+  },
+  {
+    id: 16,
+    slug: "ar-tafsir-muyassar",
+    name: "Tafsir Muyassar",
+    author: "King Fahd Complex",
+    language: "arabic",
+  },
 ]
 
 export const DEFAULT_TAFSIR_SLUG = TAFSIR_RESOURCES[0].slug

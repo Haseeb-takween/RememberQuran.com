@@ -3,15 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
-import { useTheme } from "next-themes"
 import {
-  Check,
   ChevronDown,
   LayoutGrid,
   LogOut,
-  Moon,
   Settings2,
-  Sun,
   UserRound,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -35,7 +31,6 @@ const navLink =
 export function AuthNav() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
-  const { resolvedTheme, setTheme } = useTheme()
 
   if (status === "loading") {
     return (
@@ -59,8 +54,6 @@ export function AuthNav() {
     session.user.name?.trim() ||
     session.user.email?.split("@")[0] ||
     "Account"
-
-  const isDark = resolvedTheme === "dark"
 
   return (
     <DropdownMenu>
@@ -94,18 +87,6 @@ export function AuthNav() {
           <DropdownMenuItem render={<Link href="/account/settings" />}>
             <Settings2 />
             Settings
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-          <DropdownMenuItem
-            disabled={!resolvedTheme}
-            onClick={() => setTheme(isDark ? "light" : "dark")}
-          >
-            {isDark ? <Sun /> : <Moon />}
-            {isDark ? "Use light theme" : "Use dark theme"}
-            <Check className="ml-auto opacity-0" aria-hidden />
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

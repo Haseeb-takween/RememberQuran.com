@@ -37,3 +37,8 @@ export {
   type StreakStateDocument,
   type StreakStateModel,
 } from "./StreakState"
+export {
+  MemorisedAyah,
+  type MemorisedAyahDocument,
+  type MemorisedAyahModel,
+} from "./MemorisedAyah"

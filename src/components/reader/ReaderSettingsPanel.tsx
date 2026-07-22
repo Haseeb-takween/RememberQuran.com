@@ -8,6 +8,8 @@ import { TranslationSelector } from "./TranslationSelector"
 import { ReciterSettingsSelector } from "./ReciterSettingsSelector"
 import { TajweedToggle } from "./TajweedToggle"
 import { TajweedLegend } from "./TajweedLegend"
+import { HideArabicToggle } from "./HideArabicToggle"
+import { TafsirBookSelector } from "@/components/study/TafsirBookSelector"
 
 function Section({
   title,
@@ -31,6 +33,7 @@ export function ReaderSettingsPanel() {
     <div className="space-y-6">
       <Section title="View">
         <DisplayModeToggle />
+        <HideArabicToggle />
       </Section>
 
       <div className="h-px bg-border/60" />
@@ -55,6 +58,12 @@ export function ReaderSettingsPanel() {
 
       <Section title="Translation">
         <TranslationSelector />
+      </Section>
+
+      <div className="h-px bg-border/60" />
+
+      <Section title="Tafsir">
+        <TafsirBookSelector />
       </Section>
 
       <div className="h-px bg-border/60" />

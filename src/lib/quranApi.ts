@@ -6,6 +6,23 @@ import type {
   VersesResponse,
   VerseResponse,
 } from "@/types/quran"
+import {
+  BUNDLE_TRANSLATION_IDS,
+  TRANSLATION_IDS,
+  toApiTranslationIds,
+} from "@/lib/translations"
+
+export {
+  DEFAULT_TRANSLATIONS,
+  BUNDLE_TRANSLATION_IDS,
+  TRANSLATION_IDS,
+  TRANSLATION_NAMES,
+  TRANSLATIONS,
+  getTranslation,
+  getTranslationName,
+  isRegisteredTranslationId,
+  MAX_ACTIVE_TRANSLATIONS,
+} from "@/lib/translations"
 
 const CHAPTERS_BASE_URL = "https://api.quran.com/api/v4"
 /**
@@ -22,22 +39,6 @@ const VERSES_BASE_URL = "https://api.qurancdn.com/api/qdc"
  */
 const KHATTAB_CDN_URL =
   "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/eng-mustafakhattaba"
-
-export const TRANSLATION_IDS = {
-  SAHEEH_INTERNATIONAL: 20,
-  /** Internal ID — CDN-sourced, never sent to the quran.com API */
-  CLEAR_QURAN: 131,
-} as const
-
-export const DEFAULT_TRANSLATIONS = [
-  TRANSLATION_IDS.SAHEEH_INTERNATIONAL,
-  TRANSLATION_IDS.CLEAR_QURAN,
-]
-
-export const TRANSLATION_NAMES: Record<number, string> = {
-  [TRANSLATION_IDS.SAHEEH_INTERNATIONAL]: "Saheeh International",
-  [TRANSLATION_IDS.CLEAR_QURAN]: "The Clear Quran — Dr Mustafa Khattab",
-}
 
 const WORD_FIELDS =
   "text_uthmani,qpc_uthmani_hafs,translation,audio_url,transliteration,text_uthmani_tajweed"
@@ -133,20 +134,20 @@ export async function getChapter(id: number): Promise<Chapter> {
 /** One page of verses (max 50). Khattab is merged in getAllVerses, not here. */
 export async function getVerses(
   chapterId: number,
-  translations: number[] = DEFAULT_TRANSLATIONS,
+  translations: number[] = BUNDLE_TRANSLATION_IDS,
   page = 1,
 ): Promise<VersesResponse> {
-  const apiTranslations = translations.filter(
-    (t) => t !== TRANSLATION_IDS.CLEAR_QURAN,
-  )
+  const apiTranslations = toApiTranslationIds(translations)
   const params = new URLSearchParams({
-    translations: apiTranslations.join(","),
     words: "true",
     word_fields: WORD_FIELDS,
     fields: VERSE_FIELDS,
     per_page: "50",
     page: String(page),
   })
+  if (apiTranslations.length > 0) {
+    params.set("translations", apiTranslations.join(","))
+  }
   const data = await apiFetch<VersesResponse>(
     `${VERSES_BASE_URL}/verses/by_chapter/${chapterId}?${params}`,
   )
@@ -156,7 +157,7 @@ export async function getVerses(
 /** All verses for a chapter — handles pagination and Khattab merge */
 export async function getAllVerses(
   chapterId: number,
-  translations: number[] = DEFAULT_TRANSLATIONS,
+  translations: number[] = BUNDLE_TRANSLATION_IDS,
 ): Promise<Verse[]> {
   const wantsKhattab = translations.includes(TRANSLATION_IDS.CLEAR_QURAN)
 
@@ -182,17 +183,17 @@ export async function getAllVerses(
 /** Single verse by key e.g. "2:255" */
 export async function getVerseByKey(
   verseKey: string,
-  translations: number[] = DEFAULT_TRANSLATIONS,
+  translations: number[] = BUNDLE_TRANSLATION_IDS,
 ): Promise<Verse> {
-  const apiTranslations = translations.filter(
-    (t) => t !== TRANSLATION_IDS.CLEAR_QURAN,
-  )
+  const apiTranslations = toApiTranslationIds(translations)
   const params = new URLSearchParams({
-    translations: apiTranslations.join(","),
     words: "true",
     word_fields: WORD_FIELDS,
     fields: VERSE_FIELDS,
   })
+  if (apiTranslations.length > 0) {
+    params.set("translations", apiTranslations.join(","))
+  }
 
   const [chapterId] = verseKey.split(":")
   const wantsKhattab = translations.includes(TRANSLATION_IDS.CLEAR_QURAN)

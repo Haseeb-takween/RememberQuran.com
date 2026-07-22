@@ -12,6 +12,7 @@ import { StudyPanelProvider } from "@/context/StudyPanelContext"
 import { SoftGateProvider } from "@/context/SoftGateContext"
 import { BookmarksProvider } from "@/context/BookmarksContext"
 import { NotesProvider } from "@/context/NotesContext"
+import { HifzProvider } from "@/context/HifzContext"
 import { SoftGateDialog } from "@/components/auth/SoftGateDialog"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
 
@@ -34,9 +35,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                       <SoftGateProvider>
                         <BookmarksProvider>
                           <NotesProvider>
-                            <RouteChangeEffect />
-                            {children}
-                            <SoftGateDialog />
+                            <HifzProvider>
+                              <RouteChangeEffect />
+                              {children}
+                              <SoftGateDialog />
+                            </HifzProvider>
                           </NotesProvider>
                         </BookmarksProvider>
                       </SoftGateProvider>

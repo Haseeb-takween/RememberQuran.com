@@ -6,6 +6,8 @@ import { getTafsir, getTafsirResource } from "@/lib/studyApi"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import type { TafsirContent } from "@/types/study"
 import { StudyPanelSkeleton } from "./StudyPanelSkeleton"
+import { TafsirBookSelector } from "./TafsirBookSelector"
+import { cn } from "@/lib/utils"
 
 interface TafsirViewProps {
   verseKey: string
@@ -41,28 +43,43 @@ export function TafsirView({ verseKey }: TafsirViewProps) {
 
   const retry = useCallback(() => setAttempt((n) => n + 1), [])
 
-  // Loading state is derived: a result for a different request is stale
-  if (result?.requestKey !== requestKey) return <StudyPanelSkeleton />
+  const activeBook = getTafsirResource(tafsirSlug)
+  const isRtl = (activeBook?.language ?? "").toLowerCase() === "arabic"
 
-  if (result.content === null) {
-    return (
-      <div className="flex flex-col items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
-        <p className="text-sm text-muted-foreground">
-          Couldn&apos;t load the tafsir. Check your connection and try again.
-        </p>
-        <button
-          type="button"
-          onClick={retry}
-          className="flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors duration-[120ms] hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <RotateCcw className="size-3" strokeWidth={2} />
-          Retry
-        </button>
-      </div>
-    )
-  }
+  return (
+    <div className="flex flex-col gap-4">
+      <TafsirBookSelector />
 
-  const { content } = result
+      {result?.requestKey !== requestKey ? (
+        <StudyPanelSkeleton />
+      ) : result.content === null ? (
+        <div className="flex flex-col items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
+          <p className="text-sm text-muted-foreground">
+            Couldn&apos;t load the tafsir. Check your connection and try again.
+          </p>
+          <button
+            type="button"
+            onClick={retry}
+            className="flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors duration-[120ms] hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <RotateCcw className="size-3" strokeWidth={2} />
+            Retry
+          </button>
+        </div>
+      ) : (
+        <TafsirBody content={result.content} isRtl={isRtl} />
+      )}
+    </div>
+  )
+}
+
+function TafsirBody({
+  content,
+  isRtl,
+}: {
+  content: TafsirContent
+  isRtl: boolean
+}) {
   const resource = getTafsirResource(content.slug)
   const bookName = content.resourceName || resource?.name || content.slug
   const hasText = content.text.trim().length > 0
@@ -82,7 +99,9 @@ export function TafsirView({ verseKey }: TafsirViewProps) {
       {hasText ? (
         // Safe: sanitized server-side in /api/tafsir (single choke point)
         <div
-          className="study-prose"
+          className={cn("study-prose", isRtl && "text-right")}
+          dir={isRtl ? "rtl" : "ltr"}
+          lang={isRtl ? "ar" : "en"}
           dangerouslySetInnerHTML={{ __html: content.text }}
         />
       ) : (

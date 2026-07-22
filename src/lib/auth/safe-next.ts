@@ -14,7 +14,12 @@ export function safeNextPath(
   return trimmed
 }
 
-export type SoftGateReason = "bookmark" | "note" | "progress" | "goal"
+export type SoftGateReason =
+  | "bookmark"
+  | "note"
+  | "progress"
+  | "goal"
+  | "hifz"
 
 export function softGateCopy(reason: SoftGateReason): {
   title: string
@@ -40,6 +45,11 @@ export function softGateCopy(reason: SoftGateReason): {
       return {
         title: "Sign in to track your goals",
         description: "Set a daily reading goal and keep your streak.",
+      }
+    case "hifz":
+      return {
+        title: "Sign in to track memorisation",
+        description: "Mark ayahs you’ve memorised and see progress by surah and juz.",
       }
   }
 }

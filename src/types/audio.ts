@@ -45,7 +45,13 @@ export interface RepeatConfig {
   /** total plays; Infinity allowed */
   count: number
   remaining: number
+  /** Pause after each loop before restarting (ms). 0 = immediate. */
+  pauseMs: number
 }
+
+/** Common pause choices for memorisation repeat UI */
+export const REPEAT_PAUSE_OPTIONS_MS = [0, 1000, 2000, 3000, 5000] as const
+
 
 export interface Reciter {
   /** Recitation id — path param of the QDC audio_files endpoint */

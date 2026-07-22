@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { BookOpenText, Headphones, ImagePlus, Search } from "lucide-react"
 import { AuthNav } from "@/components/auth/AuthNav"
 import { LogoWordmark } from "@/components/layout/Logo"
+import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { cn } from "@/lib/utils"
 
 const FOCUS =
@@ -52,11 +53,11 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md",
+        "sticky top-0 z-40 w-full bg-background/95 backdrop-blur-md",
         "border-b transition-[border-color,box-shadow] duration-200 ease-out",
         scrolled
-          ? "border-border shadow-[0_1px_0_0_color-mix(in_oklch,var(--brand-gold)_22%,transparent)]"
-          : "border-transparent",
+          ? "border-border shadow-[0_1px_0_0_color-mix(in_oklch,var(--brand-gold)_32%,transparent)]"
+          : "border-border/40",
       )}
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:px-4">
@@ -97,6 +98,7 @@ export function Navbar() {
               </Link>
             )
           })}
+          <ThemeToggle />
           <AuthNav />
         </nav>
       </div>

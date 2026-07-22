@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Play, Pause, Loader2, Check, AudioLines, ArrowRight } from "lucide-react"
+import { Play, Pause, Loader2, ArrowRight } from "lucide-react"
 import { useAudioPlayer } from "@/context/AudioPlayerContext"
 import { usePlaybackVerseKey } from "@/lib/playbackStore"
-import { RECITERS, getReciter } from "@/lib/audioSources"
+import { ReciterCombobox } from "@/components/audio/ReciterCombobox"
 import { SurahCombobox } from "@/components/quran/SurahCombobox"
 import type { Chapter } from "@/types/quran"
 import { cn } from "@/lib/utils"
@@ -43,7 +43,6 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
   const isRadio = player.mode === "radio" && player.status !== "idle"
   const isPlaying = isRadio && player.status === "playing"
   const isBusy = isRadio && (player.status === "loading" || player.isBuffering)
-  const currentReciter = getReciter(player.reciterId)
 
   function handleMainButton() {
     if (isRadio && (player.status === "playing" || player.status === "paused")) {
@@ -126,53 +125,11 @@ export function RadioPanel({ chapters }: RadioPanelProps) {
         <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Reciter
         </h2>
-        <div
-          role="radiogroup"
-          aria-label="Reciter"
-          className="grid grid-cols-1 gap-1.5"
-        >
-          {RECITERS.map((reciter) => {
-            const active = reciter.id === currentReciter.id
-            return (
-              <button
-                key={reciter.id}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => player.setReciter(reciter.id)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left",
-                  "transition-colors duration-120",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  active
-                    ? "border-primary/25 bg-primary/10 text-primary"
-                    : "border-border hover:bg-accent",
-                )}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{reciter.name}</span>
-                  <span
-                    className={cn(
-                      "mt-0.5 flex items-center gap-1.5 text-[11px]",
-                      active ? "text-primary/75" : "text-muted-foreground",
-                    )}
-                  >
-                    <span dir="rtl" lang="ar">
-                      {reciter.arabicName}
-                    </span>
-                    {reciter.hasWordTiming && (
-                      <span className="inline-flex items-center gap-0.5">
-                        <AudioLines className="size-2.5" strokeWidth={2} />
-                        word sync
-                      </span>
-                    )}
-                  </span>
-                </span>
-                {active && <Check className="size-4 shrink-0" strokeWidth={2} />}
-              </button>
-            )
-          })}
-        </div>
+        <ReciterCombobox
+          value={player.reciterId}
+          onChange={player.setReciter}
+          label="Reciter"
+        />
       </section>
     </div>
   )

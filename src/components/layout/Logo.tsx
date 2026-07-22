@@ -56,14 +56,14 @@ export function LogoWordmark({ className, size = "md" }: LogoWordmarkProps) {
         className={cn("w-auto dark:hidden", cls)}
         decoding="async"
       />
-      {/* Dark mode: light wordmark */}
+      {/* Dark mode: light wordmark — slight lift on near-black chrome */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/rq-logo-horizontal-dark.svg"
         alt=""
         width={width}
         height={height}
-        className={cn("hidden w-auto dark:block", cls)}
+        className={cn("hidden w-auto dark:block dark:brightness-110", cls)}
         aria-hidden="true"
         decoding="async"
       />

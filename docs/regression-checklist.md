@@ -139,6 +139,22 @@ Run this checklist top-to-bottom on the **live domain** (rememberquran.com) befo
 - [ ] Repeat range (e.g. 1:1–1:4) ×2 loops the range twice
 - [ ] ∞ repeats until stopped; "Stop" ends the repeat
 - [ ] Repeat interacts correctly with speed and reciter switching
+- [ ] Quick presets (Ayah ×3 / ×5 / Range ×3) start from the current ayah
+- [ ] Pause between repeats (1–5s) waits before restarting the loop; Stop cancels a pending pause
+
+### Hide Arabic (memorisation)
+- [ ] Settings → Hide Arabic blurs ayah text in verse mode; tap reveals; eye icon hides again
+- [ ] Reading (mushaf) mode: tap blurred ayah to reveal/hide without breaking continuous flow
+- [ ] Word tooltips/popovers suppressed while blurred; work again when revealed
+- [ ] Turning Hide Arabic off clears session reveals; no account required
+
+### Hifz tracker (signed-in)
+- [ ] Guest: brain icon on an ayah opens soft-gate (no silent local persistence)
+- [ ] Signed-in: mark ayah → icon fills; unmark → clears; survives refresh
+- [ ] Account → Hifz: surah view shows % progress and linked ayah chips
+- [ ] Account → Hifz: juz view shows all 30 juz with correct % (spot-check juz 1 and 30)
+- [ ] Unmark from account page removes the ayah and updates the reader icon
+- [ ] Overview card shows memorised count; Hifz appears in account nav
 
 ### Word-level audio (click to hear)
 - [ ] Desktop: clicking a word plays its pronunciation in isolation

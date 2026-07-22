@@ -1,16 +1,23 @@
 import type { VerseTranslation } from "@/types/quran"
-import { TRANSLATION_NAMES } from "@/lib/quranApi"
+import { getTranslation, getTranslationName } from "@/lib/translations"
 
 interface TranslationBlockProps {
   translation: VerseTranslation
 }
 
 export function TranslationBlock({ translation }: TranslationBlockProps) {
-  const name = TRANSLATION_NAMES[translation.resource_id] ?? "Translation"
+  const meta = getTranslation(translation.resource_id)
+  const name = getTranslationName(translation.resource_id)
+  const dir = meta?.direction ?? "ltr"
+  const lang = meta?.lang ?? "en"
 
   return (
     <div className="mt-3 border-l-2 border-border/70 pl-3">
-      <p dir="ltr" className="quran-translation max-w-[70ch] text-foreground/85">
+      <p
+        dir={dir}
+        lang={lang}
+        className="quran-translation max-w-[70ch] text-foreground/85"
+      >
         {translation.text}
       </p>
       <p className="mt-1 text-[11px] text-muted-foreground/60">— {name}</p>

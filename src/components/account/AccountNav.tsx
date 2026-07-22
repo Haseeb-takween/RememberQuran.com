@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Bookmark,
+  Brain,
   LayoutGrid,
   Menu,
   NotebookPen,
@@ -27,6 +28,7 @@ const links = [
   { href: "/account", label: "Overview", icon: LayoutGrid },
   { href: "/account/bookmarks", label: "Bookmarks", icon: Bookmark },
   { href: "/account/notes", label: "Notes", icon: NotebookPen },
+  { href: "/account/hifz", label: "Hifz", icon: Brain },
   { href: "/account/progress", label: "Progress", icon: TrendingUp },
   { href: "/account/goals", label: "Goals", icon: Target },
   { href: "/account/settings", label: "Settings", icon: Settings2 },

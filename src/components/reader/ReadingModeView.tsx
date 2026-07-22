@@ -5,6 +5,7 @@ import { useHighlightedWord } from "@/lib/playbackStore"
 import { ArabicWord } from "./ArabicWord"
 import { AyahEndMarker } from "./AyahEndMarker"
 import { TranslationBlock } from "./TranslationBlock"
+import { HideableArabic } from "./HideableArabic"
 import { cn } from "@/lib/utils"
 
 interface ReadingModeViewProps {
@@ -23,33 +24,35 @@ function ReadingVerse({ verse, isTarget }: { verse: Verse; isTarget: boolean }) 
   )
 
   return (
-    <span
-      id={`ayah-${verse.verse_number}`}
-      data-verse-key={verse.verse_key}
+    <HideableArabic
+      verseKey={verse.verse_key}
+      compact
       className={cn(
         "scroll-mt-28",
         isTarget && "rounded-sm bg-primary/8",
       )}
     >
-      {words.map((word, i) =>
-        word.char_type_name === "end" ? (
-          <AyahEndMarker
-            key={word.id}
-            digits={word.qpc_uthmani_hafs || word.text_uthmani}
-            ariaLabel={`Ayah ${verse.verse_number}`}
-          />
-        ) : (
-          <span key={word.id}>
-            <ArabicWord
-              word={word}
-              isHighlighted={highlightedPosition === word.position}
-              verseKey={verse.verse_key}
+      <span id={`ayah-${verse.verse_number}`} data-verse-key={verse.verse_key}>
+        {words.map((word, i) =>
+          word.char_type_name === "end" ? (
+            <AyahEndMarker
+              key={word.id}
+              digits={word.qpc_uthmani_hafs || word.text_uthmani}
+              ariaLabel={`Ayah ${verse.verse_number}`}
             />
-            {i < words.length - 1 ? " " : null}
-          </span>
-        ),
-      )}{" "}
-    </span>
+          ) : (
+            <span key={word.id}>
+              <ArabicWord
+                word={word}
+                isHighlighted={highlightedPosition === word.position}
+                verseKey={verse.verse_key}
+              />
+              {i < words.length - 1 ? " " : null}
+            </span>
+          ),
+        )}{" "}
+      </span>
+    </HideableArabic>
   )
 }
 

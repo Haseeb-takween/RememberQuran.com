@@ -5,6 +5,7 @@ import { auth } from "@/auth"
 import {
   ArrowUpRight,
   Bookmark,
+  Brain,
   Flame,
   NotebookPen,
   TrendingUp,
@@ -13,6 +14,7 @@ import { ContinuePrompt } from "@/components/account/ContinuePrompt"
 import { connectToDatabase } from "@/lib/db"
 import { evaluateGoalAndStreak } from "@/lib/goals/evaluate"
 import { Bookmark as BookmarkModel } from "@/lib/models/Bookmark"
+import { MemorisedAyah } from "@/lib/models/MemorisedAyah"
 import { Note } from "@/lib/models/Note"
 import { ProgressEvent } from "@/lib/models/ProgressEvent"
 
@@ -34,12 +36,14 @@ export default async function AccountPage() {
     "friend"
 
   await connectToDatabase()
-  const [bookmarkCount, noteCount, viewedSurahs, goals] = await Promise.all([
-    BookmarkModel.countDocuments({ userId: session.user.id }),
-    Note.countDocuments({ userId: session.user.id }),
-    ProgressEvent.distinct("surah", { userId: session.user.id }),
-    evaluateGoalAndStreak(session.user.id),
-  ])
+  const [bookmarkCount, noteCount, hifzCount, viewedSurahs, goals] =
+    await Promise.all([
+      BookmarkModel.countDocuments({ userId: session.user.id }),
+      Note.countDocuments({ userId: session.user.id }),
+      MemorisedAyah.countDocuments({ userId: session.user.id }),
+      ProgressEvent.distinct("surah", { userId: session.user.id }),
+      evaluateGoalAndStreak(session.user.id),
+    ])
 
   const summaries = [
     {
@@ -55,6 +59,13 @@ export default async function AccountPage() {
       value: noteCount.toLocaleString(),
       description: "private reflections",
       icon: NotebookPen,
+    },
+    {
+      href: "/account/hifz",
+      label: "Hifz",
+      value: hifzCount.toLocaleString(),
+      description: "ayahs memorised",
+      icon: Brain,
     },
     {
       href: "/account/progress",

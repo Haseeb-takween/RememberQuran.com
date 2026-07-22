@@ -12,8 +12,10 @@ import { useHighlightedWord } from "@/lib/playbackStore"
 import { ArabicLine } from "./ArabicLine"
 import { BookmarkButton } from "./BookmarkButton"
 import { NoteButton } from "./NoteButton"
+import { HifzButton } from "./HifzButton"
 import { AyahNumber } from "./AyahNumber"
 import { TranslationBlock } from "./TranslationBlock"
+import { HideableArabic } from "./HideableArabic"
 import { cn } from "@/lib/utils"
 
 interface AyahBlockProps {
@@ -142,6 +144,11 @@ export function AyahBlock({
             className={metaBtn}
             iconClassName="size-3.5"
           />
+          <HifzButton
+            verseKey={verse.verse_key}
+            className={metaBtn}
+            iconClassName="size-3.5"
+          />
         </div>
         <div className="flex items-center gap-0.5">
           <button
@@ -170,7 +177,13 @@ export function AyahBlock({
         </div>
       </div>
 
-      <ArabicLine words={verse.words} highlightedPosition={highlightedPosition} verseKey={verse.verse_key} />
+      <HideableArabic verseKey={verse.verse_key}>
+        <ArabicLine
+          words={verse.words}
+          highlightedPosition={highlightedPosition}
+          verseKey={verse.verse_key}
+        />
+      </HideableArabic>
 
       {showTranslation &&
         activeTranslations.map((t) => (

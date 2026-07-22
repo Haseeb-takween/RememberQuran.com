@@ -1,4 +1,5 @@
 import type { Reciter } from "@/types/audio"
+import type { Word } from "@/types/quran"
 
 /**
  * Chapter-audio reciters verified in M5 Phase 0 (`docs/m5-resource-ids.md`).
@@ -119,7 +120,7 @@ export function getReciter(id: number): Reciter {
 const WORD_AUDIO_BASE_URL = "https://audio.qurancdn.com/"
 const WORD_AUDIO_FILE_RE = /(\d{3}_\d{3}_)\d{3}(\.mp3(?:\?.*)?)$/
 
-export function getWordAudioUrl(word: import("@/types/quran").Word): string | null {
+export function getWordAudioUrl(word: Word): string | null {
   if (!word.audio_url) return null
 
   // QDC's audio_url suffix can count pause/end-marker entries, while

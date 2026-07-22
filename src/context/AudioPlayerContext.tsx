@@ -45,6 +45,7 @@ const REPEAT_OFF: RepeatConfig = {
   end: 1,
   count: 1,
   remaining: 1,
+  pauseMs: 0,
 }
 
 export interface AudioPlayerState {
@@ -237,6 +238,9 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const loadTokenRef = useRef(0)
   const pendingSeekMsRef = useRef<number | null>(null)
   const repeatRef = useRef<RepeatConfig>(REPEAT_OFF)
+  const repeatPauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** True while waiting between memorisation loops — ignore pause UI churn */
+  const repeatGapRef = useRef(false)
   const statusRef = useRef<PlaybackStatus>("idle")
   const modeRef = useRef<PlaybackMode>("surah")
   const chapterIdRef = useRef<number | null>(null)
@@ -262,6 +266,48 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     cancelAnimationFrame(rafRef.current)
     rafRef.current = 0
   }, [])
+
+  const clearRepeatPause = useCallback(() => {
+    if (repeatPauseTimerRef.current !== null) {
+      clearTimeout(repeatPauseTimerRef.current)
+      repeatPauseTimerRef.current = null
+    }
+    repeatGapRef.current = false
+  }, [])
+
+  const scheduleRepeatRestart = useCallback(
+    (fromMs: number, pauseMs: number) => {
+      const audio = audioRef.current
+      if (!audio) return
+      clearRepeatPause()
+      if (pauseMs <= 0) {
+        audio.currentTime = fromMs / 1000
+        return
+      }
+      repeatGapRef.current = true
+      audio.pause()
+      repeatPauseTimerRef.current = setTimeout(() => {
+        repeatPauseTimerRef.current = null
+        repeatGapRef.current = false
+        const el = audioRef.current
+        if (!el) return
+        el.currentTime = fromMs / 1000
+        const p = el.play()
+        if (p) {
+          p.catch((err: unknown) => {
+            if ((err as DOMException)?.name === "AbortError") return
+            dispatch({ type: "PAUSED" })
+          })
+        }
+      }, pauseMs)
+    },
+    [clearRepeatPause],
+  )
+  const scheduleRepeatRestartRef = useRef(scheduleRepeatRestart)
+  scheduleRepeatRestartRef.current = scheduleRepeatRestart
+
+  const clearRepeatPauseRef = useRef(clearRepeatPause)
+  clearRepeatPauseRef.current = clearRepeatPause
 
   const tickBody = useCallback(() => {
     const audio = audioRef.current
@@ -296,15 +342,19 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       }
 
       const rep = repeatRef.current
-      if (rep.mode !== "off") {
+      if (rep.mode !== "off" && !repeatGapRef.current) {
         const startTiming = timings[rep.start - 1]
         const endTiming = timings[rep.end - 1]
         if (startTiming && endTiming && t >= endTiming.to) {
           if (rep.remaining > 1) {
             rep.remaining -= 1
-            audio.currentTime = startTiming.from / 1000
             dispatch({ type: "REPEAT_REMAINING", remaining: rep.remaining })
+            scheduleRepeatRestartRef.current(
+              startTiming.from,
+              rep.pauseMs ?? 0,
+            )
           } else {
+            clearRepeatPauseRef.current()
             repeatRef.current = REPEAT_OFF
             dispatch({ type: "SET_REPEAT", repeat: REPEAT_OFF })
           }
@@ -386,7 +436,10 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       chapterIdRef.current = intent.chapterId
       prefetchedNextRef.current = null
       lastIntentRef.current = intent
-      if (chapterChanged) repeatRef.current = REPEAT_OFF
+      if (chapterChanged) {
+        clearRepeatPauseRef.current()
+        repeatRef.current = REPEAT_OFF
+      }
       dispatch({
         type: "LOAD_START",
         chapterId: intent.chapterId,
@@ -611,6 +664,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   )
 
   const setRepeatAction = useCallback((config: Omit<RepeatConfig, "remaining">) => {
+    clearRepeatPause()
     if (config.mode === "off") {
       repeatRef.current = REPEAT_OFF
       dispatch({ type: "SET_REPEAT", repeat: REPEAT_OFF })
@@ -625,16 +679,18 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     if (start > end) [start, end] = [end, start]
     const plays =
       config.count === Infinity ? Infinity : Math.max(Math.round(config.count) || 1, 1)
+    const pauseMs = Math.max(0, Math.round(config.pauseMs) || 0)
     const repeat: RepeatConfig = {
       mode: config.mode,
       start,
       end,
       count: plays,
       remaining: plays,
+      pauseMs,
     }
     repeatRef.current = repeat
     dispatch({ type: "SET_REPEAT", repeat })
-  }, [])
+  }, [clearRepeatPause])
 
   const playWord = useCallback((word: Word) => {
     const url = getWordAudioUrl(word)
@@ -672,6 +728,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 
   const stop = useCallback(() => {
     ++loadTokenRef.current // invalidate any in-flight load
+    clearRepeatPause()
     stopLoop()
     const audio = audioRef.current
     if (audio) {
@@ -687,9 +744,10 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     lastIntentRef.current = null
     clearPosition()
     dispatch({ type: "STOP" })
-  }, [stopLoop])
+  }, [stopLoop, clearRepeatPause])
 
   useEffect(() => stopLoop, [stopLoop])
+  useEffect(() => () => clearRepeatPause(), [clearRepeatPause])
 
   const handlePlay = useCallback(() => {
     dispatch({ type: "PLAYING" })
@@ -699,6 +757,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   // Also fires on OS-level interruptions (calls, other apps taking audio)
   const handlePause = useCallback(() => {
     stopLoop()
+    if (repeatGapRef.current) return // memorisation inter-loop pause
     if (!audioRef.current?.currentSrc) return // src cleared by stop()
     dispatch({ type: "PAUSED" })
   }, [stopLoop])
@@ -708,15 +767,21 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     // tick check can fire — honour the repeat here, not just in tickBody
     const rep = repeatRef.current
     const audio = audioRef.current
-    if (rep.mode !== "off" && audio) {
+    if (rep.mode !== "off" && audio && !repeatGapRef.current) {
       const startTiming = timingsRef.current[rep.start - 1]
       if (rep.remaining > 1 && startTiming) {
         rep.remaining -= 1
         dispatch({ type: "REPEAT_REMAINING", remaining: rep.remaining })
-        audio.currentTime = startTiming.from / 1000
-        safePlay()
+        const pauseMs = rep.pauseMs ?? 0
+        if (pauseMs <= 0) {
+          audio.currentTime = startTiming.from / 1000
+          safePlay()
+        } else {
+          scheduleRepeatRestart(startTiming.from, pauseMs)
+        }
         return
       }
+      clearRepeatPause()
       repeatRef.current = REPEAT_OFF
       dispatch({ type: "SET_REPEAT", repeat: REPEAT_OFF })
     }
@@ -726,7 +791,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     } else {
       dispatch({ type: "PAUSED" })
     }
-  }, [stopLoop, advanceRadio, safePlay])
+  }, [stopLoop, advanceRadio, safePlay, scheduleRepeatRestart, clearRepeatPause])
 
   const handleError = useCallback(() => {
     if (!audioRef.current?.currentSrc) return // fired by clearing src

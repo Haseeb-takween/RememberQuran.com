@@ -4,10 +4,15 @@ import {
   createContext,
   useContext,
   useCallback,
+  useState,
   type ReactNode,
 } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
-import { DEFAULT_TRANSLATIONS, TRANSLATION_IDS } from "@/lib/quranApi"
+import {
+  DEFAULT_TRANSLATIONS,
+  isRegisteredTranslationId,
+  MAX_ACTIVE_TRANSLATIONS,
+} from "@/lib/translations"
 import { DEFAULT_TAFSIR_SLUG, isTafsirSlug } from "@/lib/studyApi"
 import {
   type QuranFont,
@@ -38,6 +43,8 @@ export interface ReaderSettings {
   tafsirSlug: string
   /** Tajweed colour coding toggle (M3) — default false */
   tajweedEnabled: boolean
+  /** Memorisation: blur Arabic until tapped (M5) — default false */
+  hideArabic: boolean
 }
 
 interface ReaderSettingsContextValue extends ReaderSettings {
@@ -54,6 +61,10 @@ interface ReaderSettingsContextValue extends ReaderSettings {
   setShowTranslation: (show: boolean) => void
   setTafsirSlug: (slug: string) => void
   setTajweedEnabled: (enabled: boolean) => void
+  setHideArabic: (enabled: boolean) => void
+  /** Session-only: ayahs revealed while hide mode is on */
+  isVerseRevealed: (verseKey: string) => boolean
+  toggleVerseReveal: (verseKey: string) => void
   arabicFontSize: string
   translationFontSize: string
   arabicFontFamily: string
@@ -75,6 +86,7 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   showTranslation: true,
   tafsirSlug: DEFAULT_TAFSIR_SLUG,
   tajweedEnabled: false,
+  hideArabic: false,
 }
 
 function clampScale(n: number): FontScale {
@@ -84,20 +96,15 @@ function clampScale(n: number): FontScale {
 /**
  * Pre-QA-fix builds stored transliteration id 57 as part of the default pair
  * (131 + 57, both mislabeled). 57 present → user had the old default; reset
- * to the corrected pair. Otherwise keep only ids we can actually serve.
+ * to the corrected pair. Otherwise keep only registered translation ids (cap 3).
  */
 function migrateActiveTranslations(raw: unknown): number[] {
   if (!Array.isArray(raw)) return DEFAULT_TRANSLATIONS
   const ids = raw.filter((id): id is number => typeof id === "number")
   if (ids.includes(57)) return DEFAULT_TRANSLATIONS
-  const valid = ids.filter(
-    (id) =>
-      id === TRANSLATION_IDS.SAHEEH_INTERNATIONAL ||
-      id === TRANSLATION_IDS.CLEAR_QURAN,
-  )
-  // Non-empty selection of now-unknown ids → fall back to defaults
+  const valid = ids.filter(isRegisteredTranslationId)
   if (ids.length > 0 && valid.length === 0) return DEFAULT_TRANSLATIONS
-  return valid
+  return valid.slice(0, MAX_ACTIVE_TRANSLATIONS)
 }
 
 function migrateSettings(raw: unknown): ReaderSettings {
@@ -147,6 +154,10 @@ function migrateSettings(raw: unknown): ReaderSettings {
       typeof s.tajweedEnabled === "boolean"
         ? s.tajweedEnabled
         : DEFAULT_SETTINGS.tajweedEnabled,
+    hideArabic:
+      typeof s.hideArabic === "boolean"
+        ? s.hideArabic
+        : DEFAULT_SETTINGS.hideArabic,
   }
 }
 
@@ -160,6 +171,9 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
     DEFAULT_SETTINGS,
   )
   const settings = migrateSettings(raw)
+  const [revealedVerseKeys, setRevealedVerseKeys] = useState(
+    () => new Set<string>(),
+  )
 
   const setSettings = useCallback(
     (updater: (prev: ReaderSettings) => ReaderSettings) => {
@@ -231,18 +245,31 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
 
   const setActiveTranslations = useCallback(
     (activeTranslations: number[]) =>
-      setSettings((p) => ({ ...p, activeTranslations })),
+      setSettings((p) => ({
+        ...p,
+        activeTranslations: activeTranslations
+          .filter(isRegisteredTranslationId)
+          .slice(0, MAX_ACTIVE_TRANSLATIONS),
+      })),
     [setSettings],
   )
 
   const toggleTranslation = useCallback(
     (id: number) =>
-      setSettings((p) => ({
-        ...p,
-        activeTranslations: p.activeTranslations.includes(id)
-          ? p.activeTranslations.filter((t) => t !== id)
-          : [...p.activeTranslations, id],
-      })),
+      setSettings((p) => {
+        if (!isRegisteredTranslationId(id)) return p
+        if (p.activeTranslations.includes(id)) {
+          return {
+            ...p,
+            activeTranslations: p.activeTranslations.filter((t) => t !== id),
+          }
+        }
+        if (p.activeTranslations.length >= MAX_ACTIVE_TRANSLATIONS) return p
+        return {
+          ...p,
+          activeTranslations: [...p.activeTranslations, id],
+        }
+      }),
     [setSettings],
   )
 
@@ -266,6 +293,28 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
     [setSettings],
   )
 
+  const setHideArabic = useCallback(
+    (hideArabic: boolean) => {
+      setSettings((p) => ({ ...p, hideArabic }))
+      if (!hideArabic) setRevealedVerseKeys(new Set())
+    },
+    [setSettings],
+  )
+
+  const isVerseRevealed = useCallback(
+    (verseKey: string) => revealedVerseKeys.has(verseKey),
+    [revealedVerseKeys],
+  )
+
+  const toggleVerseReveal = useCallback((verseKey: string) => {
+    setRevealedVerseKeys((prev) => {
+      const next = new Set(prev)
+      if (next.has(verseKey)) next.delete(verseKey)
+      else next.add(verseKey)
+      return next
+    })
+  }, [])
+
   return (
     <ReaderSettingsContext.Provider
       value={{
@@ -283,6 +332,9 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
         setShowTranslation,
         setTafsirSlug,
         setTajweedEnabled,
+        setHideArabic,
+        isVerseRevealed,
+        toggleVerseReveal,
         arabicFontSize: ARABIC_FONT_SIZES[settings.arabicFontScale],
         translationFontSize: TRANSLATION_FONT_SIZES[settings.translationFontScale],
         arabicFontFamily: QURAN_FONT_FAMILY[settings.quranFont],

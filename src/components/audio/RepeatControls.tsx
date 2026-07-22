@@ -6,6 +6,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Input } from "@/components/ui/input"
 import { useAudioPlayer } from "@/context/AudioPlayerContext"
 import { usePlaybackVerseKey } from "@/lib/playbackStore"
+import { REPEAT_PAUSE_OPTIONS_MS } from "@/types/audio"
 import { cn } from "@/lib/utils"
 
 const barBtn = cn(
@@ -23,7 +24,12 @@ const COUNT_OPTIONS: { label: string; value: number }[] = [
   { label: "∞", value: Infinity },
 ]
 
-/** Memorisation surface: repeat one ayah or an ayah range N times */
+function pauseLabel(ms: number) {
+  if (ms <= 0) return "None"
+  return `${ms / 1000}s`
+}
+
+/** Memorisation surface: presets, ayah/range repeat, pause between loops */
 export function RepeatControls() {
   const player = useAudioPlayer()
   const playingVerseKey = usePlaybackVerseKey()
@@ -36,22 +42,57 @@ export function RepeatControls() {
   const [draftStart, setDraftStart] = useState("")
   const [draftEnd, setDraftEnd] = useState("")
   const [draftCount, setDraftCount] = useState<number>(3)
+  const [draftPauseMs, setDraftPauseMs] = useState(0)
 
   const isActive = player.repeat.mode !== "off"
   const start = Number(draftStart) || currentVerse
   const end = Number(draftEnd) || start
 
-  function apply() {
+  function apply(overrides?: {
+    mode?: "ayah" | "range"
+    start?: number
+    end?: number
+    count?: number
+    pauseMs?: number
+  }) {
+    const mode = overrides?.mode ?? draftMode
+    const s = overrides?.start ?? start
+    const e = overrides?.end ?? end
     player.setRepeat({
-      mode: draftMode,
-      start,
-      end: draftMode === "ayah" ? start : end,
-      count: draftCount,
+      mode,
+      start: s,
+      end: mode === "ayah" ? s : e,
+      count: overrides?.count ?? draftCount,
+      pauseMs: overrides?.pauseMs ?? draftPauseMs,
     })
   }
 
   function turnOff() {
-    player.setRepeat({ mode: "off", start: 1, end: 1, count: 1 })
+    player.setRepeat({ mode: "off", start: 1, end: 1, count: 1, pauseMs: 0 })
+  }
+
+  function applyPreset(
+    kind: "ayah-3" | "ayah-5" | "range-3",
+  ) {
+    const s = currentVerse
+    if (kind === "ayah-3") {
+      setDraftMode("ayah")
+      setDraftCount(3)
+      apply({ mode: "ayah", start: s, end: s, count: 3 })
+      return
+    }
+    if (kind === "ayah-5") {
+      setDraftMode("ayah")
+      setDraftCount(5)
+      apply({ mode: "ayah", start: s, end: s, count: 5 })
+      return
+    }
+    const e = Math.min(s + 2, maxVerse)
+    setDraftMode("range")
+    setDraftStart(String(s))
+    setDraftEnd(String(e))
+    setDraftCount(3)
+    apply({ mode: "range", start: s, end: e, count: 3 })
   }
 
   const segBtn = (active: boolean) =>
@@ -78,8 +119,8 @@ export function RepeatControls() {
           </button>
         )}
       />
-      <PopoverContent side="top" align="end" className="w-64 p-3">
-        <div className="space-y-3">
+      <PopoverContent side="top" align="end" className="w-72 p-3">
+        <div className="flex flex-col gap-3">
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             Repeat
           </p>
@@ -93,16 +134,47 @@ export function RepeatControls() {
                 {player.repeat.count === Infinity
                   ? " · repeating"
                   : ` · ${player.repeat.remaining} left`}
+                {player.repeat.pauseMs > 0
+                  ? ` · ${pauseLabel(player.repeat.pauseMs)} pause`
+                  : ""}
               </span>
               <button
                 type="button"
                 onClick={turnOff}
-                className="font-medium underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                className="rounded-sm font-medium underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Stop
               </button>
             </div>
           )}
+
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[11px] text-muted-foreground">Quick presets</p>
+            <div className="flex gap-1">
+              {(
+                [
+                  { id: "ayah-3" as const, label: "Ayah ×3" },
+                  { id: "ayah-5" as const, label: "Ayah ×5" },
+                  { id: "range-3" as const, label: "Range ×3" },
+                ] as const
+              ).map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  disabled={player.status === "idle"}
+                  onClick={() => applyPreset(id)}
+                  className={cn(
+                    "flex-1 rounded-md border border-border px-1.5 py-1.5 text-[11px] font-medium",
+                    "transition-colors duration-[120ms] hover:bg-accent",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "disabled:pointer-events-none disabled:opacity-40",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div role="radiogroup" aria-label="Repeat mode" className="flex gap-1 rounded-lg bg-muted/60 p-0.5">
             <button
@@ -147,7 +219,7 @@ export function RepeatControls() {
                   min={1}
                   max={maxVerse}
                   inputMode="numeric"
-                  placeholder={String(Math.min(currentVerse + 4, maxVerse))}
+                  placeholder={String(Math.min(currentVerse + 2, maxVerse))}
                   value={draftEnd}
                   onChange={(e) => setDraftEnd(e.target.value)}
                   className="h-8 text-sm"
@@ -178,15 +250,46 @@ export function RepeatControls() {
             ))}
           </div>
 
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[11px] text-muted-foreground">
+              Pause between repeats
+            </p>
+            <div
+              role="radiogroup"
+              aria-label="Pause between repeats"
+              className="flex gap-1"
+            >
+              {REPEAT_PAUSE_OPTIONS_MS.map((ms) => (
+                <button
+                  key={ms}
+                  type="button"
+                  role="radio"
+                  aria-checked={draftPauseMs === ms}
+                  onClick={() => setDraftPauseMs(ms)}
+                  className={cn(
+                    "flex-1 rounded-md border px-1 py-1 text-[11px] tabular-nums",
+                    "transition-colors duration-[120ms]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    draftPauseMs === ms
+                      ? "border-primary/25 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  {pauseLabel(ms)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             type="button"
-            onClick={apply}
+            onClick={() => apply()}
             disabled={player.status === "idle"}
             className={cn(
               "w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground",
               "transition-colors duration-[120ms] hover:bg-primary/90",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              "disabled:opacity-40 disabled:pointer-events-none",
+              "disabled:pointer-events-none disabled:opacity-40",
             )}
           >
             {isActive ? "Update repeat" : "Start repeat"}
