@@ -45,7 +45,12 @@ export async function Footer() {
   ]
 
   return (
-    <footer className="mt-16 border-t border-border bg-muted/30">
+    <footer className="relative mt-16 border-t border-border bg-muted/30">
+      {/* Gold hairline — a thread of manuscript gilding across the top edge */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent,color-mix(in_oklch,var(--brand-gold)_55%,transparent),transparent)]"
+      />
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-1">
@@ -61,7 +66,7 @@ export async function Footer() {
               forever.
             </p>
             <p
-              className="mt-4 font-uthmani text-xl leading-loose text-foreground/60"
+              className="mt-4 font-uthmani text-xl leading-loose text-[var(--brand-gold)]"
               dir="rtl"
               lang="ar"
             >

@@ -46,15 +46,36 @@ Key facts:
   `types/Segment.ts` comment claiming `[chapter, verse, word]` is outdated —
   verified empirically.) Timestamps are absolute within the chapter file, so
   playback-rate changes need no compensation.
-- **Recitation IDs** are shared with `api.quran.com/api/v4/resources/recitations`:
-
-  | Reciter | Recitation id | Word segments |
-  |---|---|---|
-  | Mishary Rashid Alafasy | 7 | ✅ verified |
-  | Abdur-Rahman as-Sudais | 3 | ✅ verified |
-
+- **Recitation IDs** are shared with `api.quran.com/api/v4/resources/recitations`.
   The QDC reciter list also carries a separate `reciter_id` field — ignore it;
   the `audio_files` path takes the list's `id`.
+
+### M5 reciter table (verified 2026-07-22)
+
+Live check: `scripts/m5-phase0-inventory.mjs` → `docs/m5-resource-ids.md`.
+QDC public list has **14** chapter reciters; all had word segments on chapters 1 & 2.
+Id **8** (Minshawi Mujawwad) works on `audio_files` but is omitted from the QDC list.
+
+| Reciter | Id | Style | Word segments |
+|---|---:|---|:---:|
+| Mishary Rashid Alafasy | 7 | Murattal | ✅ |
+| Mishary Rashid Alafasy (streaming variant) | 173 | Murattal | ✅ (skip duplicate in UI) |
+| Abdur-Rahman as-Sudais | 3 | Murattal | ✅ |
+| Yasser Ad-Dussary | 97 | Murattal | ✅ |
+| AbdulBaset AbdulSamad | 2 | Murattal | ✅ |
+| AbdulBaset AbdulSamad | 1 | Mujawwad | ✅ |
+| Abu Bakr al-Shatri | 4 | Murattal | ✅ |
+| Hani ar-Rifai | 5 | Murattal | ✅ |
+| Mahmoud Khalil Al-Husary | 6 | Murattal | ✅ |
+| Mahmoud Khalil Al-Husary | 12 | Muallim | ✅ |
+| Saud ash-Shuraym | 10 | Murattal | ✅ |
+| Khalifah Al Tunaiji | 161 | Murattal | ✅ |
+| Mohamed Siddiq al-Minshawi | 9 | Murattal | ✅ |
+| Mohamed Siddiq al-Minshawi | 8 | Mujawwad | ✅ (not in QDC list) |
+| Mohamed Siddiq al-Minshawi | 168 | Kids repeat | ✅ |
+| V4 “Mohamed al-Tablawi” | 11 | — | ❌ segments empty; CDN path is Al-Qasim — **exclude** |
+
+Public QDC does **not** currently expose 20+ distinct chapter recitations. See Phase 0 notes in `docs/m5-resource-ids.md`.
 
 ### Data-quality gotchas (all handled in `src/lib/wordSync.ts`)
 
@@ -86,7 +107,7 @@ host; it exists only on the QDC host.
 (`getWordAudioUrl` in `src/lib/audioSources.ts`). End-of-ayah markers carry
 `audio_url: null`, so their play affordance is hidden.
 
-## 3. Adding reciters (target: 20+ by M5)
+## 3. Adding reciters (M5)
 
 Append an entry to `RECITERS` in `src/lib/audioSources.ts`:
 
@@ -94,9 +115,10 @@ Append an entry to `RECITERS` in `src/lib/audioSources.ts`:
 { id: <recitation id>, name, arabicName, style, hasWordTiming }
 ```
 
-Nothing else changes. To find ids and check segment coverage:
-`GET api.qurancdn.com/api/qdc/audio/reciters?locale=en`, then spot-check
-`audio_files?chapter=1&segments=true` for non-empty `segments`.
+Nothing else changes. Prefer the Phase 0 allowlist in `docs/m5-resource-ids.md`.
+To re-verify: `pnpm m5:inventory` (or
+`GET api.qurancdn.com/api/qdc/audio/reciters?locale=en`, then
+`audio_files?chapter=1&segments=true`).
 
 ## 4. Known limitations
 

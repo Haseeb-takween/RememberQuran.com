@@ -1,38 +1,24 @@
 import { getChapters } from "@/lib/quranApi"
 import { ContinuePrompt } from "@/components/account/ContinuePrompt"
-import { HomeJumpField } from "./HomeJumpField"
+import { HomeHero } from "./HomeHero"
+import { QuickAccess } from "./QuickAccess"
 import { SurahCard } from "./SurahCard"
 
 export async function SurahListPage() {
   const chapters = await getChapters()
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-8 flex flex-col items-center gap-4 text-center">
-        <p
-          className="font-uthmani text-5xl leading-[1.6] text-foreground/75 sm:text-6xl"
-          dir="rtl"
-          lang="ar"
-        >
-          ٱلْقُرْآنُ ٱلْكَرِيمُ
-        </p>
-        <div className="flex flex-col items-center gap-2">
-          <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-            Read the Quran
-          </h1>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Arabic text, meanings, and study tools — free for everyone.
-          </p>
-        </div>
-        <HomeJumpField />
-      </header>
+    <div className="mx-auto max-w-5xl space-y-10 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <HomeHero />
 
-      <ContinuePrompt className="mx-auto mb-10 w-full max-w-2xl" />
+      <ContinuePrompt className="w-full" />
+
+      <QuickAccess />
 
       <section aria-labelledby="all-surahs-heading">
         <div className="mb-4 flex items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--brand-gold)]">
               Directory
             </p>
             <h2
@@ -45,9 +31,11 @@ export async function SurahListPage() {
         </div>
 
         {/* dir="rtl" makes surahs flow right-to-left (mushaf order); each card
-            resets to ltr so its internal layout is unchanged */}
+            resets to ltr so its internal layout is unchanged. content-visibility
+            lets the browser skip layout/paint for off-screen rows — a real perf
+            win with 114 cards, without a client-side fetch. */}
         <div
-          className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
           dir="rtl"
           role="list"
           aria-label="List of Surahs"
@@ -57,8 +45,8 @@ export async function SurahListPage() {
               key={chapter.id}
               role="listitem"
               dir="ltr"
-              className="animate-fade-up"
-              style={{ animationDelay: `${Math.min(index * 10, 250)}ms` }}
+              className="animate-fade-up [content-visibility:auto] [contain-intrinsic-size:auto_76px]"
+              style={{ animationDelay: `${Math.min(index * 8, 200)}ms` }}
             >
               <SurahCard chapter={chapter} />
             </div>

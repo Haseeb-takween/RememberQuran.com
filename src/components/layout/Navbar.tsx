@@ -11,6 +11,34 @@ import { cn } from "@/lib/utils"
 const FOCUS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 
+const NAV = [
+  {
+    href: "/",
+    label: "Quran",
+    icon: BookOpenText,
+    match: (p: string) => p === "/" || /^\/\d+/.test(p),
+  },
+  {
+    href: "/radio",
+    label: "Listen",
+    icon: Headphones,
+    match: (p: string) => p === "/radio",
+  },
+  {
+    href: "/media-maker",
+    label: "Create",
+    icon: ImagePlus,
+    match: (p: string) => p === "/media-maker",
+  },
+  {
+    href: "/search",
+    label: "Search",
+    icon: Search,
+    match: (p: string) => p === "/search",
+    hideLabel: true,
+  },
+] as const
+
 export function Navbar() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
@@ -24,12 +52,14 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full bg-background/95 backdrop-blur-sm",
-        "border-b transition-[border-color] duration-150 ease-out",
-        scrolled ? "border-border" : "border-transparent",
+        "sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md",
+        "border-b transition-[border-color,box-shadow] duration-200 ease-out",
+        scrolled
+          ? "border-border shadow-[0_1px_0_0_color-mix(in_oklch,var(--brand-gold)_22%,transparent)]"
+          : "border-transparent",
       )}
     >
-      <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:px-4">
         <Link
           href="/"
           aria-label="RememberQuran — home"
@@ -41,61 +71,34 @@ export function Navbar() {
           <LogoWordmark size="md" />
         </Link>
 
-        <div className="flex items-center gap-1">
-          <Link
-            href="/"
-            aria-label="Browse the Quran"
-            className={cn(
-              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
-              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
-              (pathname === "/" || /^\/\d+/.test(pathname)) && "text-primary",
-              FOCUS,
-            )}
-          >
-            <BookOpenText className="size-3.5" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Quran</span>
-          </Link>
-          <Link
-            href="/radio"
-            aria-label="Quran Radio"
-            className={cn(
-              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
-              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
-              pathname === "/radio" && "text-primary",
-              FOCUS,
-            )}
-          >
-            <Headphones className="size-3.5" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Listen</span>
-          </Link>
-          <Link
-            href="/media-maker"
-            aria-label="Create an ayah card"
-            className={cn(
-              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
-              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
-              pathname === "/media-maker" && "text-primary",
-              FOCUS,
-            )}
-          >
-            <ImagePlus className="size-3.5" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Create</span>
-          </Link>
-          <Link
-            href="/search"
-            aria-label="Search the Quran"
-            className={cn(
-              "flex h-9 items-center gap-1.5 rounded-md px-2.5",
-              "text-xs text-muted-foreground transition-colors duration-120 hover:bg-accent hover:text-foreground",
-              pathname === "/search" && "text-primary",
-              FOCUS,
-            )}
-          >
-            <Search className="size-3.5" strokeWidth={1.75} />
-            <span className="sr-only">Search</span>
-          </Link>
+        <nav className="flex items-center gap-0.5">
+          {NAV.map(({ href, label, icon: Icon, match, hideLabel }) => {
+            const active = match(pathname)
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-label={label}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs transition-colors duration-150",
+                  active
+                    ? "bg-accent text-primary"
+                    : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+                  FOCUS,
+                )}
+              >
+                <Icon className="size-3.5" strokeWidth={1.75} />
+                {hideLabel ? (
+                  <span className="sr-only">{label}</span>
+                ) : (
+                  <span className="hidden sm:inline">{label}</span>
+                )}
+              </Link>
+            )
+          })}
           <AuthNav />
-        </div>
+        </nav>
       </div>
     </header>
   )

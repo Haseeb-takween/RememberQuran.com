@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:morphology": "node scripts/build-morphology.mjs"
+    "build:morphology": "node scripts/build-morphology.mjs",
+    "m5:inventory": "node scripts/m5-phase0-inventory.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

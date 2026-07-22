@@ -20,7 +20,7 @@ export function LogoMark({ size = 24, className }: LogoMarkProps) {
       src="/rq-mark.svg"
       alt=""
       width={size}
-      height={Math.round(size * (124 / 120))}
+      height={size}
       className={cn("shrink-0", className)}
       decoding="async"
     />
