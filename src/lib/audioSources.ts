@@ -1,7 +1,9 @@
 import type { Reciter } from "@/types/audio"
-import type { Word } from "@/types/quran"
 
-
+/**
+ * Chapter-audio reciters verified in M5 Phase 0 (`docs/m5-resource-ids.md`).
+ * Adding a row here is enough for player, radio, and settings pickers.
+ */
 export const RECITERS: Reciter[] = [
   {
     id: 7,
@@ -17,6 +19,90 @@ export const RECITERS: Reciter[] = [
     style: "Murattal",
     hasWordTiming: true,
   },
+  {
+    id: 97,
+    name: "Yasser Ad-Dussary",
+    arabicName: "ياسر الدوسري",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 2,
+    name: "AbdulBaset AbdulSamad",
+    arabicName: "عبد الباسط عبد الصمد",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 1,
+    name: "AbdulBaset AbdulSamad",
+    arabicName: "عبد الباسط عبد الصمد",
+    style: "Mujawwad",
+    hasWordTiming: true,
+  },
+  {
+    id: 4,
+    name: "Abu Bakr al-Shatri",
+    arabicName: "أبو بكر الشاطري",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 5,
+    name: "Hani ar-Rifai",
+    arabicName: "هاني الرفاعي",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 6,
+    name: "Mahmoud Khalil Al-Husary",
+    arabicName: "محمود خليل الحصري",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 12,
+    name: "Mahmoud Khalil Al-Husary",
+    arabicName: "محمود خليل الحصري",
+    style: "Muallim",
+    hasWordTiming: true,
+  },
+  {
+    id: 10,
+    name: "Saud ash-Shuraym",
+    arabicName: "سعود الشريم",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 161,
+    name: "Khalifah Al Tunaiji",
+    arabicName: "خليفة الطنيجي",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 9,
+    name: "Mohamed Siddiq al-Minshawi",
+    arabicName: "محمد صديق المنشاوي",
+    style: "Murattal",
+    hasWordTiming: true,
+  },
+  {
+    id: 8,
+    name: "Mohamed Siddiq al-Minshawi",
+    arabicName: "محمد صديق المنشاوي",
+    style: "Mujawwad",
+    hasWordTiming: true,
+  },
+  {
+    id: 168,
+    name: "Mohamed Siddiq al-Minshawi",
+    arabicName: "محمد صديق المنشاوي",
+    style: "Kids repeat",
+    hasWordTiming: true,
+  },
 ]
 
 export const DEFAULT_RECITER_ID = 7
@@ -30,11 +116,10 @@ export function getReciter(id: number): Reciter {
   )
 }
 
-
 const WORD_AUDIO_BASE_URL = "https://audio.qurancdn.com/"
 const WORD_AUDIO_FILE_RE = /(\d{3}_\d{3}_)\d{3}(\.mp3(?:\?.*)?)$/
 
-export function getWordAudioUrl(word: Word): string | null {
+export function getWordAudioUrl(word: import("@/types/quran").Word): string | null {
   if (!word.audio_url) return null
 
   // QDC's audio_url suffix can count pause/end-marker entries, while
