@@ -60,7 +60,7 @@ export function Navbar() {
           : "border-border/40",
       )}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:px-4">
+      <div className="mx-auto flex h-14 max-w-5xl items-center gap-2 px-3 sm:px-4">
         <Link
           href="/"
           aria-label="RememberQuran — home"
