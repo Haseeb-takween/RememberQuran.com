@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import type { LucideIcon } from "lucide-react"
 import { BookOpenText, Headphones, ImagePlus, Search } from "lucide-react"
 import { AuthNav } from "@/components/auth/AuthNav"
 import { LogoWordmark } from "@/components/layout/Logo"
@@ -12,7 +13,13 @@ import { cn } from "@/lib/utils"
 const FOCUS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 
-const NAV = [
+const NAV: {
+  href: string
+  label: string
+  icon: LucideIcon
+  match: (p: string) => boolean
+  hideLabel?: boolean
+}[] = [
   {
     href: "/",
     label: "Quran",
@@ -38,7 +45,7 @@ const NAV = [
     match: (p: string) => p === "/search",
     hideLabel: true,
   },
-] as const
+]
 
 export function Navbar() {
   const pathname = usePathname()

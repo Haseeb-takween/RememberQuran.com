@@ -42,6 +42,13 @@ export async function Footer() {
             { label: "Bookmarks", href: "/account/bookmarks" },
           ],
     },
+    {
+      heading: "Legal",
+      links: [
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms of Service", href: "/terms" },
+      ],
+    },
   ]
 
   return (
@@ -52,8 +59,8 @@ export async function Footer() {
         className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent,color-mix(in_oklch,var(--brand-gold)_55%,transparent),transparent)]"
       />
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="sm:col-span-2 lg:col-span-1">
             <Link
               href="/"
               aria-label="RememberQuran — home"
@@ -101,6 +108,20 @@ export async function Footer() {
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 sm:flex-row sm:items-center">
           <p className="text-xs text-muted-foreground">
             © {YEAR} Remember Quran · Public-benefit, ad-free
+            {" · "}
+            <Link
+              href="/privacy"
+              className="underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Privacy
+            </Link>
+            {" · "}
+            <Link
+              href="/terms"
+              className="underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Terms
+            </Link>
           </p>
           <p className="max-w-md text-xs text-muted-foreground/55">
             Quran text: King Fahd Complex (Hafs). Translations © respective
