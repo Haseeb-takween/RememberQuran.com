@@ -4,10 +4,13 @@ import {
   createContext,
   useContext,
   useCallback,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
+import { useSurahContent } from "@/context/SurahContentContext"
 import {
   DEFAULT_TRANSLATIONS,
   isRegisteredTranslationId,
@@ -25,6 +28,11 @@ import {
   MIN_FONT_SCALE,
   MAX_FONT_SCALE,
 } from "@/lib/readerFonts"
+import {
+  type HideArabicRange,
+  isAyahInHideRange,
+  normalizeHideRange,
+} from "@/lib/quran/verse-key"
 
 /** verse = translation/verse-by-verse view; reading = continuous Arabic (mushaf-like) */
 export type DisplayMode = "verse" | "reading"
@@ -62,9 +70,21 @@ interface ReaderSettingsContextValue extends ReaderSettings {
   setTafsirSlug: (slug: string) => void
   setTajweedEnabled: (enabled: boolean) => void
   setHideArabic: (enabled: boolean) => void
+  /**
+   * Session-only: when hide Arabic is on, limit blur to this inclusive range.
+   * null = whole surah (default).
+   */
+  hideArabicRange: HideArabicRange | null
+  setHideArabicRange: (range: HideArabicRange | null) => void
   /** Session-only: ayahs revealed while hide mode is on */
   isVerseRevealed: (verseKey: string) => boolean
   toggleVerseReveal: (verseKey: string) => void
+  /** Whether this verse is inside the active hide scope (always true if no range). */
+  isVerseInHideScope: (verseKey: string) => boolean
+  /** Reveal every ayah in the current hide scope for this surah. */
+  revealAllInHideScope: (surahId: number, maxAyah: number) => void
+  /** Re-hide every ayah currently in the hide scope. */
+  hideAllInHideScope: (surahId: number, maxAyah: number) => void
   arabicFontSize: string
   translationFontSize: string
   arabicFontFamily: string
@@ -166,6 +186,7 @@ const ReaderSettingsContext = createContext<ReaderSettingsContextValue | null>(
 )
 
 export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
+  const { surahId } = useSurahContent()
   const [raw, setRaw] = useLocalStorage<unknown>(
     "rq-reader-settings",
     DEFAULT_SETTINGS,
@@ -174,6 +195,20 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
   const [revealedVerseKeys, setRevealedVerseKeys] = useState(
     () => new Set<string>(),
   )
+  const [hideArabicRange, setHideArabicRangeState] = useState<HideArabicRange | null>(
+    null,
+  )
+  const prevSurahIdRef = useRef<number | null>(null)
+
+  // Surah change: drop range + reveals (ayah counts / keys are surah-specific)
+  useEffect(() => {
+    const prev = prevSurahIdRef.current
+    if (prev !== null && surahId !== null && prev !== surahId) {
+      setHideArabicRangeState(null)
+      setRevealedVerseKeys(new Set())
+    }
+    prevSurahIdRef.current = surahId
+  }, [surahId])
 
   const setSettings = useCallback(
     (updater: (prev: ReaderSettings) => ReaderSettings) => {
@@ -301,9 +336,22 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
     [setSettings],
   )
 
+  const setHideArabicRange = useCallback((range: HideArabicRange | null) => {
+    setHideArabicRangeState(range)
+  }, [])
+
   const isVerseRevealed = useCallback(
     (verseKey: string) => revealedVerseKeys.has(verseKey),
     [revealedVerseKeys],
+  )
+
+  const isVerseInHideScope = useCallback(
+    (verseKey: string) => {
+      const ayah = Number(verseKey.split(":")[1])
+      if (!Number.isInteger(ayah) || ayah < 1) return false
+      return isAyahInHideRange(ayah, hideArabicRange)
+    },
+    [hideArabicRange],
   )
 
   const toggleVerseReveal = useCallback((verseKey: string) => {
@@ -314,6 +362,40 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
       return next
     })
   }, [])
+
+  const revealAllInHideScope = useCallback(
+    (sid: number, maxAyah: number) => {
+      const range =
+        hideArabicRange ??
+        normalizeHideRange(1, maxAyah, maxAyah)
+      if (!range) return
+      setRevealedVerseKeys((prev) => {
+        const next = new Set(prev)
+        for (let a = range.start; a <= range.end; a++) {
+          next.add(`${sid}:${a}`)
+        }
+        return next
+      })
+    },
+    [hideArabicRange],
+  )
+
+  const hideAllInHideScope = useCallback(
+    (sid: number, maxAyah: number) => {
+      const range =
+        hideArabicRange ??
+        normalizeHideRange(1, maxAyah, maxAyah)
+      if (!range) return
+      setRevealedVerseKeys((prev) => {
+        const next = new Set(prev)
+        for (let a = range.start; a <= range.end; a++) {
+          next.delete(`${sid}:${a}`)
+        }
+        return next
+      })
+    },
+    [hideArabicRange],
+  )
 
   return (
     <ReaderSettingsContext.Provider
@@ -333,8 +415,13 @@ export function ReaderSettingsProvider({ children }: { children: ReactNode }) {
         setTafsirSlug,
         setTajweedEnabled,
         setHideArabic,
+        hideArabicRange,
+        setHideArabicRange,
         isVerseRevealed,
         toggleVerseReveal,
+        isVerseInHideScope,
+        revealAllInHideScope,
+        hideAllInHideScope,
         arabicFontSize: ARABIC_FONT_SIZES[settings.arabicFontScale],
         translationFontSize: TRANSLATION_FONT_SIZES[settings.translationFontScale],
         arabicFontFamily: QURAN_FONT_FAMILY[settings.quranFont],

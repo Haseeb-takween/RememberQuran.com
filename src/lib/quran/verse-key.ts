@@ -36,3 +36,33 @@ export function parseVerseKey(input: unknown): ParsedVerseKey | null {
   if (count === null || ayahId > count) return null
   return { surahId, ayahId }
 }
+
+/** Inclusive ayah range for memorisation hide scope (session-only). */
+export type HideArabicRange = { start: number; end: number }
+
+/**
+ * Clamp + swap start/end into a valid inclusive range for the current surah.
+ * Returns null for non-integers or when maxAyah is invalid.
+ */
+export function normalizeHideRange(
+  start: unknown,
+  end: unknown,
+  maxAyah: number,
+): HideArabicRange | null {
+  const s = typeof start === "number" ? start : Number(start)
+  const e = typeof end === "number" ? end : Number(end)
+  if (!Number.isInteger(s) || !Number.isInteger(e)) return null
+  if (!Number.isInteger(maxAyah) || maxAyah < 1) return null
+  const a = Math.min(Math.max(s, 1), maxAyah)
+  const b = Math.min(Math.max(e, 1), maxAyah)
+  return { start: Math.min(a, b), end: Math.max(a, b) }
+}
+
+/** null range = whole surah is in hide scope. */
+export function isAyahInHideRange(
+  ayahNum: number,
+  range: HideArabicRange | null,
+): boolean {
+  if (!range) return true
+  return ayahNum >= range.start && ayahNum <= range.end
+}

@@ -28,12 +28,17 @@ function Section({
   )
 }
 
-export function ReaderSettingsPanel() {
+export function ReaderSettingsPanel({
+  onRequestClose,
+}: {
+  /** Close the settings sheet (e.g. after starting a hide-range session). */
+  onRequestClose?: () => void
+} = {}) {
   return (
     <div className="space-y-6">
       <Section title="View">
         <DisplayModeToggle />
-        <HideArabicToggle />
+        <HideArabicToggle onRequestClose={onRequestClose} />
       </Section>
 
       <div className="h-px bg-border/60" />

@@ -13,6 +13,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
@@ -151,13 +152,31 @@ export function ReaderControls() {
       </div>
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <SheetContent side="right" className="w-full max-w-sm overflow-y-auto sm:max-w-md">
-          <SheetHeader>
+        <SheetContent
+          side="right"
+          className="w-full max-w-sm gap-0 overflow-hidden p-0 sm:max-w-md"
+        >
+          <SheetHeader className="shrink-0 border-b border-border/60">
             <SheetTitle>Settings</SheetTitle>
           </SheetHeader>
-          <div className="mt-5 px-1 pb-8">
-            <ReaderSettingsPanel />
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+            <ReaderSettingsPanel
+              onRequestClose={() => setSettingsOpen(false)}
+            />
           </div>
+          <SheetFooter className="shrink-0 border-t border-border/60 bg-popover">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(false)}
+              className={cn(
+                "w-full rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground",
+                "transition-colors duration-[120ms] hover:bg-primary/90",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              )}
+            >
+              Done
+            </button>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </>

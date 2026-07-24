@@ -15,8 +15,9 @@ interface HideableArabicProps {
 
 /**
  * Wraps Arabic text for memorisation hide mode.
- * When enabled and not revealed: blur + block word tooltips; tap toggles reveal.
+ * When enabled and in hide scope and not revealed: blur + block word tooltips; tap toggles reveal.
  * When revealed: Arabic is interactive again; a small control re-hides.
+ * Ayahs outside the selected range render normally (no blur wrapper).
  */
 export function HideableArabic({
   verseKey,
@@ -24,11 +25,22 @@ export function HideableArabic({
   className,
   compact = false,
 }: HideableArabicProps) {
-  const { hideArabic, isVerseRevealed, toggleVerseReveal } = useReaderSettings()
+  const {
+    hideArabic,
+    isVerseRevealed,
+    isVerseInHideScope,
+    toggleVerseReveal,
+  } = useReaderSettings()
+  const inScope = isVerseInHideScope(verseKey)
   const revealed = isVerseRevealed(verseKey)
-  const masked = hideArabic && !revealed
+  const active = hideArabic && inScope
+  const masked = active && !revealed
 
-  if (!hideArabic) {
+  if (!active) {
+    // Keep mushaf flow inline when hide is on but this ayah is outside the range
+    if (compact && hideArabic) {
+      return <span className={className}>{children}</span>
+    }
     return <div className={className}>{children}</div>
   }
 
