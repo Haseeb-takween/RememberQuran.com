@@ -41,15 +41,24 @@ export function RegisterForm() {
 
     setPending(true)
     try {
-      const res = await fetch("/api/account/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: parsed.data.email,
-          password: parsed.data.password,
-          displayName: displayName.trim(),
-        }),
-      })
+      const controller = new AbortController()
+      const timeoutId = window.setTimeout(() => controller.abort(), 25_000)
+
+      let res: Response
+      try {
+        res = await fetch("/api/account/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: parsed.data.email,
+            password: parsed.data.password,
+            displayName: displayName.trim(),
+          }),
+          signal: controller.signal,
+        })
+      } finally {
+        window.clearTimeout(timeoutId)
+      }
 
       const data = (await res.json().catch(() => ({}))) as { error?: string }
 
@@ -71,13 +80,20 @@ export function RegisterForm() {
       if (!result || result.error) {
         setError("Account created — please sign in.")
         router.push(`/login?next=${encodeURIComponent(next)}`)
+        setPending(false)
         return
       }
 
       // Full navigation so the session cookie is picked up and we leave /register
       window.location.assign(next)
-    } catch {
-      setError("Something went wrong. Please try again.")
+    } catch (err) {
+      const aborted =
+        err instanceof DOMException && err.name === "AbortError"
+      setError(
+        aborted
+          ? "Creating your account is taking too long. Please try again."
+          : "Something went wrong. Please try again.",
+      )
       setPassword("")
       setPending(false)
     }

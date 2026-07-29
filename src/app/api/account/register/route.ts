@@ -7,6 +7,7 @@ import { BookmarkCollection } from "@/lib/models/BookmarkCollection"
 import { User } from "@/lib/models/User"
 
 export const runtime = "nodejs"
+export const maxDuration = 30
 
 const MAX_REQUEST_BYTES = 16_384
 const DISPLAY_NAME_MAX_LENGTH = 80
@@ -60,8 +61,7 @@ export async function POST(request: Request) {
   try {
     await connectToDatabase()
 
-    // Build unique indexes before accepting the first registration. This
-    // prevents duplicate emails during concurrent requests on a fresh DB.
+    // Ensure unique indexes exist before first registration (idempotent).
     await Promise.all([User.init(), BookmarkCollection.init()])
 
     const existingUser = await User.exists({ email: parsed.data.email })
@@ -70,47 +70,31 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await hash(parsed.data.password, 12)
-    const session = await mongoose.startSession()
-    let userId = ""
+
+    // Avoid multi-document transactions — they can hang indefinitely on some
+    // Atlas / serverless setups and leave the Create account button stuck.
+    const user = await User.create({
+      email: parsed.data.email,
+      passwordHash,
+      profile: { displayName },
+    })
 
     try {
-      await session.withTransaction(async () => {
-        const [user] = await User.create(
-          [
-            {
-              email: parsed.data.email,
-              passwordHash,
-              profile: { displayName },
-            },
-          ],
-          { session },
-        )
-
-        userId = user._id.toString()
-
-        await BookmarkCollection.create(
-          [
-            {
-              userId: user._id,
-              name: "Favourites",
-              isDefault: true,
-            },
-          ],
-          { session },
-        )
+      await BookmarkCollection.create({
+        userId: user._id,
+        name: "Favourites",
+        isDefault: true,
       })
-    } finally {
-      await session.endSession()
-    }
-
-    if (!userId) {
-      throw new Error("Registration transaction did not create a user")
+    } catch (collectionError) {
+      // Best-effort cleanup so a half-created account does not block re-register
+      await User.deleteOne({ _id: user._id }).catch(() => undefined)
+      throw collectionError
     }
 
     return json(
       {
         user: {
-          id: userId,
+          id: user._id.toString(),
           email: parsed.data.email,
           name: displayName || null,
         },
@@ -118,7 +102,10 @@ export async function POST(request: Request) {
       201,
     )
   } catch (error) {
-    if (error instanceof mongoose.mongo.MongoServerError && error.code === 11000) {
+    if (
+      error instanceof mongoose.mongo.MongoServerError &&
+      error.code === 11000
+    ) {
       return json({ error: "An account with this email already exists." }, 409)
     }
 
