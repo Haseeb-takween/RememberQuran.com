@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useReducedMotion } from "motion/react"
 import type { Chapter, Verse } from "@/types/quran"
 import { useReaderSettings } from "@/context/ReaderSettingsContext"
 import { usePlaybackVerseKey, useVerseScrollRequest } from "@/lib/playbackStore"
@@ -58,9 +57,17 @@ export function QuranReader({ chapter, verses, targetAyahId }: QuranReaderProps)
     translationFontSize,
     arabicFontFamily,
   } = useReaderSettings()
-  const shouldReduceMotion = useReducedMotion()
+  const [shouldReduceMotion, setShouldReduceMotion] = useState(false)
   const [highlightActive, setHighlightActive] = useState(false)
   const clearRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const sync = () => setShouldReduceMotion(mq.matches)
+    sync()
+    mq.addEventListener("change", sync)
+    return () => mq.removeEventListener("change", sync)
+  }, [])
 
   useEffect(() => {
     if (!targetAyahId) return

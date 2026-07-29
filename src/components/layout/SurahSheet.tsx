@@ -4,19 +4,16 @@ import { useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { useUI } from "@/context/UIContext"
+import { useChapters } from "@/context/ChaptersContext"
 import { SurahNavigationPanel } from "./SurahNavigationPanel"
-import type { Chapter } from "@/types/quran"
-
-interface SurahSheetProps {
-  chapters: Chapter[]
-}
 
 function isSurahPath(pathname: string) {
   return /^\/\d+/.test(pathname)
 }
 
-export function SurahSheet({ chapters }: SurahSheetProps) {
+export function SurahSheet() {
   const pathname = usePathname()
+  const chapters = useChapters()
   const { mobileNavOpen, setMobileNavOpen } = useUI()
 
   useEffect(() => {

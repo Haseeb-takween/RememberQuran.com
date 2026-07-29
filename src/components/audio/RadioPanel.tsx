@@ -4,15 +4,11 @@ import { useState } from "react"
 import Link from "next/link"
 import { Play, Pause, Loader2, ArrowRight } from "lucide-react"
 import { useAudioPlayer } from "@/context/AudioPlayerContext"
+import { useChapters } from "@/context/ChaptersContext"
 import { usePlaybackVerseKey } from "@/lib/playbackStore"
 import { ReciterCombobox } from "@/components/audio/ReciterCombobox"
 import { SurahCombobox } from "@/components/quran/SurahCombobox"
-import type { Chapter } from "@/types/quran"
 import { cn } from "@/lib/utils"
-
-interface RadioPanelProps {
-  chapters: Chapter[]
-}
 
 function NowPlaying({ chapterName }: { chapterName: string | null }) {
   const verseKey = usePlaybackVerseKey()
@@ -36,7 +32,8 @@ function NowPlaying({ chapterName }: { chapterName: string | null }) {
   )
 }
 
-export function RadioPanel({ chapters }: RadioPanelProps) {
+export function RadioPanel() {
+  const chapters = useChapters()
   const player = useAudioPlayer()
   const [startChapterId, setStartChapterId] = useState<number>(1)
 

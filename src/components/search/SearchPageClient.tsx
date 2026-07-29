@@ -36,6 +36,7 @@ export function SearchPageClient({ initialQuery }: SearchPageClientProps) {
   const latestQuery = useRef(query)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isFirstSearch = useRef(true)
 
   const pushRecent = useCallback(
     (q: string) => {
@@ -86,7 +87,7 @@ export function SearchPageClient({ initialQuery }: SearchPageClientProps) {
     [pushRecent],
   )
 
-  // Debounce input changes
+  // Debounce input changes (skip delay for shareable-URL initial query)
   useEffect(() => {
     latestQuery.current = query
 
@@ -97,18 +98,17 @@ export function SearchPageClient({ initialQuery }: SearchPageClientProps) {
       scroll: false,
     })
 
-    debounceRef.current = setTimeout(() => runSearch(query), DEBOUNCE_MS)
+    const delay =
+      isFirstSearch.current && initialQuery && query === initialQuery
+        ? 0
+        : DEBOUNCE_MS
+    isFirstSearch.current = false
+    debounceRef.current = setTimeout(() => runSearch(query), delay)
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [query, router, runSearch])
-
-  // Kick off initial search if launched from a shareable URL
-  useEffect(() => {
-    if (initialQuery) runSearch(initialQuery)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [query, router, runSearch, initialQuery])
 
   function handleLoadMore() {
     if (nextPage) runSearch(latestQuery.current, nextPage, true)

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 300,
     },
+    optimizePackageImports: ["lucide-react"],
   },
   async headers() {
     return [

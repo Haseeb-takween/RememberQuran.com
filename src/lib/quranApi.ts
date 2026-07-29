@@ -1,3 +1,4 @@
+import { cache } from "react"
 import type {
   Chapter,
   Verse,
@@ -114,22 +115,22 @@ function mergeKhattab(verse: Verse, khattab: Map<number, string>): Verse {
 }
 
 /** All 114 chapters — cached indefinitely (Quran never changes) */
-export async function getChapters(): Promise<Chapter[]> {
+export const getChapters = cache(async (): Promise<Chapter[]> => {
   const data = await apiFetch<ChaptersResponse>(
     `${CHAPTERS_BASE_URL}/chapters`,
     "force-cache",
   )
   return data.chapters
-}
+})
 
 /** Single chapter metadata — cached indefinitely */
-export async function getChapter(id: number): Promise<Chapter> {
+export const getChapter = cache(async (id: number): Promise<Chapter> => {
   const data = await apiFetch<ChapterResponse>(
     `${CHAPTERS_BASE_URL}/chapters/${id}`,
     "force-cache",
   )
   return data.chapter
-}
+})
 
 /** One page of verses (max 50). Khattab is merged in getAllVerses, not here. */
 export async function getVerses(
@@ -155,10 +156,10 @@ export async function getVerses(
 }
 
 /** All verses for a chapter — handles pagination and Khattab merge */
-export async function getAllVerses(
+export const getAllVerses = cache(async (
   chapterId: number,
   translations: number[] = BUNDLE_TRANSLATION_IDS,
-): Promise<Verse[]> {
+): Promise<Verse[]> => {
   const wantsKhattab = translations.includes(TRANSLATION_IDS.CLEAR_QURAN)
 
   const [first, khattab] = await Promise.all([
@@ -178,13 +179,13 @@ export async function getAllVerses(
 
   if (!khattab) return verses
   return verses.map((v) => mergeKhattab(v, khattab))
-}
+})
 
 /** Single verse by key e.g. "2:255" */
-export async function getVerseByKey(
+export const getVerseByKey = cache(async (
   verseKey: string,
   translations: number[] = BUNDLE_TRANSLATION_IDS,
-): Promise<Verse> {
+): Promise<Verse> => {
   const apiTranslations = toApiTranslationIds(translations)
   const params = new URLSearchParams({
     words: "true",
@@ -205,4 +206,4 @@ export async function getVerseByKey(
 
   const verse = sanitizeVerse(data.verse)
   return khattab ? mergeKhattab(verse, khattab) : verse
-}
+})

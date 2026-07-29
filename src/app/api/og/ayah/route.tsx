@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og"
 import type { NextRequest } from "next/server"
-import { getChapters, getVerseByKey, TRANSLATION_IDS } from "@/lib/quranApi"
+import { getChapter, getVerseByKey, TRANSLATION_IDS } from "@/lib/quranApi"
 import {
   arabicFontSize,
   getMediaPreset,
@@ -74,12 +74,11 @@ export async function GET(request: NextRequest) {
   const preset = getMediaPreset(presetId)
 
   try {
-    const [verse, chapters] = await Promise.all([
+    const [verse, chapter] = await Promise.all([
       getVerseByKey(verseKey, [TRANSLATION_IDS.SAHEEH_INTERNATIONAL]),
-      getChapters(),
+      getChapter(parsed.surahId),
     ])
 
-    const chapter = chapters.find((c) => c.id === parsed.surahId)
     const surahName = chapter?.name_simple ?? `Surah ${parsed.surahId}`
     const arabic = (verse.text_uthmani ?? "")
       .replace(QURAN_ANNOTATION_MARKS, "")

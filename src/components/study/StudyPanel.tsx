@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useStudyPanel, type StudyView } from "@/context/StudyPanelContext"
 import { useSurahContent } from "@/context/SurahContentContext"
@@ -11,9 +12,20 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import { TafsirView } from "./TafsirView"
-import { AsbabView } from "./AsbabView"
-import { WordDetailView } from "./WordDetailView"
+import { StudyPanelSkeleton } from "./StudyPanelSkeleton"
+
+const TafsirView = dynamic(
+  () => import("./TafsirView").then((m) => m.TafsirView),
+  { loading: () => <StudyPanelSkeleton /> },
+)
+const AsbabView = dynamic(
+  () => import("./AsbabView").then((m) => m.AsbabView),
+  { loading: () => <StudyPanelSkeleton /> },
+)
+const WordDetailView = dynamic(
+  () => import("./WordDetailView").then((m) => m.WordDetailView),
+  { loading: () => <StudyPanelSkeleton /> },
+)
 
 const VIEWS: { view: StudyView; label: string }[] = [
   { view: "tafsir", label: "Tafsir" },
@@ -135,14 +147,18 @@ export function StudyPanel() {
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
-              {target.view === "tafsir" && <TafsirView verseKey={target.verseKey} />}
-              {target.view === "asbab" && <AsbabView verseKey={target.verseKey} />}
-              {target.view === "word" && target.wordPosition !== undefined && (
+              {target.view === "tafsir" ? (
+                <TafsirView verseKey={target.verseKey} />
+              ) : null}
+              {target.view === "asbab" ? (
+                <AsbabView verseKey={target.verseKey} />
+              ) : null}
+              {target.view === "word" && target.wordPosition !== undefined ? (
                 <WordDetailView
                   verseKey={target.verseKey}
                   wordPosition={target.wordPosition}
                 />
-              )}
+              ) : null}
             </div>
           </>
         )}

@@ -26,16 +26,15 @@ export default async function BookmarksPage() {
   const userId = session.user.id
 
   await connectToDatabase()
-  // Legacy accounts (pre-Favourites seed) get a default folder on first visit
-  await getOrCreateFavourites(userId)
-
-  const [collections, bookmarks, chapters] = await Promise.all([
-    BookmarkCollection.find({ userId })
-      .sort({ isDefault: -1, createdAt: 1 })
-      .lean(),
+  // Seed Favourites in parallel with bookmarks/chapters; collections after seed
+  const [, bookmarks, chapters] = await Promise.all([
+    getOrCreateFavourites(userId),
     Bookmark.find({ userId }).lean(),
     getChapters(),
   ])
+  const collections = await BookmarkCollection.find({ userId })
+    .sort({ isDefault: -1, createdAt: 1 })
+    .lean()
 
   const chapterById = new Map(chapters.map((c) => [c.id, c]))
 

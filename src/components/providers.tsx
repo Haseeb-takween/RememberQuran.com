@@ -2,8 +2,8 @@
 
 import { SessionProvider } from "next-auth/react"
 import { ThemeProvider } from "next-themes"
-import { MotionConfig } from "motion/react"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { ChaptersProvider } from "@/context/ChaptersContext"
 import { ReaderSettingsProvider } from "@/context/ReaderSettingsContext"
 import { AudioPlayerProvider } from "@/context/AudioPlayerContext"
 import { UIProvider } from "@/context/UIContext"
@@ -15,8 +15,15 @@ import { NotesProvider } from "@/context/NotesContext"
 import { HifzProvider } from "@/context/HifzContext"
 import { SoftGateDialog } from "@/components/auth/SoftGateDialog"
 import { RouteChangeEffect } from "@/components/layout/RouteChangeEffect"
+import type { Chapter } from "@/types/quran"
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+  children,
+  chapters,
+}: {
+  children: React.ReactNode
+  chapters: Chapter[]
+}) {
   return (
     <SessionProvider>
       <ThemeProvider
@@ -25,8 +32,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange={false}
       >
-        <MotionConfig reducedMotion="user">
-          <TooltipProvider delay={150}>
+        <TooltipProvider delay={150}>
+          <ChaptersProvider chapters={chapters}>
             <UIProvider>
               <SurahContentProvider>
                 <ReaderSettingsProvider>
@@ -48,8 +55,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 </ReaderSettingsProvider>
               </SurahContentProvider>
             </UIProvider>
-          </TooltipProvider>
-        </MotionConfig>
+          </ChaptersProvider>
+        </TooltipProvider>
       </ThemeProvider>
     </SessionProvider>
   )

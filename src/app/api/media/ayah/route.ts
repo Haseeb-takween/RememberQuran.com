@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import { getChapters, getVerseByKey, TRANSLATION_IDS } from "@/lib/quranApi"
+import { getChapter, getVerseByKey, TRANSLATION_IDS } from "@/lib/quranApi"
 import { plainTranslation } from "@/lib/media/presets"
 import { parseVerseKey } from "@/lib/quran/verse-key"
 
@@ -14,11 +14,10 @@ export async function GET(request: NextRequest) {
   const verseKey = `${parsed.surahId}:${parsed.ayahId}`
 
   try {
-    const [verse, chapters] = await Promise.all([
+    const [verse, chapter] = await Promise.all([
       getVerseByKey(verseKey, [TRANSLATION_IDS.SAHEEH_INTERNATIONAL]),
-      getChapters(),
+      getChapter(parsed.surahId),
     ])
-    const chapter = chapters.find((item) => item.id === parsed.surahId)
     const qpcWords = verse.words
       .map((word) => word.qpc_uthmani_hafs)
       .filter((word): word is string => Boolean(word))

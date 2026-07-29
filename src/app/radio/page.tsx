@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { RadioTower } from "lucide-react"
-import { getChapters } from "@/lib/quranApi"
 import { RadioPanel } from "@/components/audio/RadioPanel"
 
 export const metadata: Metadata = {
@@ -9,9 +8,7 @@ export const metadata: Metadata = {
     "Listen to continuous Quran recitation — surah after surah, with your choice of reciter.",
 }
 
-export default async function RadioPage() {
-  const chapters = await getChapters()
-
+export default function RadioPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
       <header className="mb-10 flex flex-col items-center gap-3 text-center">
@@ -20,7 +17,7 @@ export default async function RadioPage() {
         </span>
         <h1 className="text-2xl font-semibold tracking-tight">Quran Radio</h1>
       </header>
-      <RadioPanel chapters={chapters} />
+      <RadioPanel />
     </div>
   )
 }

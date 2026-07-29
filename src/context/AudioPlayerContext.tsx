@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
-import { getChapter } from "@/lib/quranApi"
+import { useChapters } from "@/context/ChaptersContext"
 import { getChapterAudio, prefetchChapterAudio } from "@/lib/audioApi"
 import {
   DEFAULT_RECITER_ID,
@@ -221,6 +221,9 @@ interface LoadIntent {
 }
 
 export function AudioPlayerProvider({ children }: { children: ReactNode }) {
+  const chapters = useChapters()
+  const chaptersRef = useRef(chapters)
+  chaptersRef.current = chapters
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
   const [rawPrefs, setRawPrefs] = useLocalStorage<unknown>(
     "rq-audio-settings",
@@ -449,11 +452,11 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       })
 
       try {
-        const [file, chapter] = await Promise.all([
-          getChapterAudio(intent.reciterId, intent.chapterId),
-          getChapter(intent.chapterId).catch(() => null),
-        ])
+        const file = await getChapterAudio(intent.reciterId, intent.chapterId)
         if (token !== loadTokenRef.current) return false
+
+        const chapter =
+          chaptersRef.current.find((c) => c.id === intent.chapterId) ?? null
 
         const timings = sanitizeTimings(file.verse_timings)
         timingsRef.current = timings

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { splitEmHighlights } from "@/lib/searchApi"
-import { TRANSLATION_IDS } from "@/lib/quranApi"
+import { TRANSLATION_IDS } from "@/lib/translations"
 import type { SearchResult } from "@/types/study"
 import { cn } from "@/lib/utils"
 

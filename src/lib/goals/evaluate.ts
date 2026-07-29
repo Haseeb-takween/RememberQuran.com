@@ -111,18 +111,20 @@ export async function evaluateGoalAndStreak(userId: string): Promise<GoalSnapsho
     )
   }
 
-  // Week strip: for each of last 7 days, mark met if we have enough ayahs
-  // that day against current goal target (historical days use today's goal)
-  const week: Array<{ date: string; met: boolean }> = []
-  for (let i = 6; i >= 0; i--) {
-    const day = addUtcDays(today, -i)
-    const ayahs = i === 0 ? todayAyahs : await sumAyahsForDay(userId, day)
-    const count = goal
-      ? countInGoalUnits(ayahs, goal.type as GoalType)
-      : 0
-    const met = Boolean(goal && count >= goal.target)
-    week.push({ date: day.toISOString(), met })
-  }
+  // Week strip: last 7 days — prefetch days 1–6 in parallel (today already known)
+  const priorDays = Array.from({ length: 6 }, (_, i) => addUtcDays(today, -(6 - i)))
+  const priorAyahs = await Promise.all(
+    priorDays.map((day) => sumAyahsForDay(userId, day)),
+  )
+  const weekAyahs = [...priorAyahs, todayAyahs]
+  const week: Array<{ date: string; met: boolean }> = weekAyahs.map((ayahs, i) => {
+    const day = i < 6 ? priorDays[i]! : today
+    const count = goal ? countInGoalUnits(ayahs, goal.type as GoalType) : 0
+    return {
+      date: day.toISOString(),
+      met: Boolean(goal && count >= goal.target),
+    }
+  })
 
   return {
     goal: goal

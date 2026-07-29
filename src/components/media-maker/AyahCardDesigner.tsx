@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Check, Clipboard, Download, ImageIcon, Share2 } from "lucide-react"
-import { toPng } from "html-to-image"
 import { Button } from "@/components/ui/button"
 import {
   ToggleGroup,
@@ -67,7 +66,7 @@ export function AyahCardDesigner({
   const [copied, setCopied] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
-  const colors = useMemo(() => getMediaPreset(preset), [preset])
+  const colors = getMediaPreset(preset)
 
   useEffect(() => {
     queueMicrotask(() => setCanNativeShare(supportsFileShare()))
@@ -125,6 +124,7 @@ export function AyahCardDesigner({
 
     const nodeWidth = cardRef.current.offsetWidth
     if (nodeWidth <= 0) throw new Error("Card has no measurable width")
+    const { toPng } = await import("html-to-image")
     return toPng(cardRef.current, {
       cacheBust: true,
       pixelRatio: 1200 / nodeWidth,
