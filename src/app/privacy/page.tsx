@@ -23,13 +23,11 @@ export default function PrivacyPage() {
         </p>
         <p>
           Website:{" "}
-          <a href={SITE} rel="noopener noreferrer">
-            {SITE}
-          </a>
+          <Link href="/">{SITE}</Link>
         </p>
         <p>
           Contact for privacy questions:{" "}
-          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
+          <Link href={`mailto:${CONTACT}`}>{CONTACT}</Link>
         </p>
       </LegalSection>
 
@@ -124,7 +122,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             Request deletion of your account and associated personal data by
-            emailing <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
+            emailing <Link href={`mailto:${CONTACT}`}>{CONTACT}</Link>
           </li>
           <li>
             Stop using the service at any time; guests can read without an
@@ -179,7 +177,7 @@ export default function PrivacyPage() {
       <LegalSection title="12. Contact">
         <p>
           Privacy questions or deletion requests:{" "}
-          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
+          <Link href={`mailto:${CONTACT}`}>{CONTACT}</Link>
         </p>
         <p>
           Also see our{" "}
