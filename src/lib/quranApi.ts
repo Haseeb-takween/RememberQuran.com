@@ -2,11 +2,16 @@ import { cache } from "react"
 import type {
   Chapter,
   Verse,
+  Word,
   ChaptersResponse,
   ChapterResponse,
   VersesResponse,
   VerseResponse,
+  PaginationMeta,
 } from "@/types/quran"
+
+/** QDC page size used by getVerses / progressive surah loading */
+export const VERSES_PER_PAGE = 50
 import {
   BUNDLE_TRANSLATION_IDS,
   TRANSLATION_IDS,
@@ -132,7 +137,47 @@ export const getChapter = cache(async (id: number): Promise<Chapter> => {
   return data.chapter
 })
 
-/** One page of verses (max 50). Khattab is merged in getAllVerses, not here. */
+/**
+ * Drop duplicate wire weight — qpc text is what the Uthmani font renders;
+ * keep a tiny fallback string only when qpc is missing.
+ */
+export function slimVerse(verse: Verse): Verse {
+  return {
+    ...verse,
+    words: (verse.words ?? []).map(slimWord),
+  }
+}
+
+function slimWord(word: Word): Word {
+  const hasQpc = Boolean(word.qpc_uthmani_hafs)
+  return {
+    id: word.id,
+    position: word.position,
+    audio_url: word.audio_url,
+    char_type_name: word.char_type_name,
+    text_uthmani: hasQpc ? "" : word.text_uthmani,
+    ...(word.qpc_uthmani_hafs
+      ? { qpc_uthmani_hafs: word.qpc_uthmani_hafs }
+      : {}),
+    ...(word.text_uthmani_tajweed
+      ? { text_uthmani_tajweed: word.text_uthmani_tajweed }
+      : {}),
+    translation: {
+      text: word.translation?.text ?? "",
+      language_name: word.translation?.language_name ?? "english",
+    },
+    ...(word.transliteration?.text
+      ? {
+          transliteration: {
+            text: word.transliteration.text,
+            language_name: word.transliteration.language_name ?? "english",
+          },
+        }
+      : {}),
+  }
+}
+
+/** One page of verses (max 50). Khattab is merged in getVersesPage / getAllVerses. */
 export async function getVerses(
   chapterId: number,
   translations: number[] = BUNDLE_TRANSLATION_IDS,
@@ -143,7 +188,7 @@ export async function getVerses(
     words: "true",
     word_fields: WORD_FIELDS,
     fields: VERSE_FIELDS,
-    per_page: "50",
+    per_page: String(VERSES_PER_PAGE),
     page: String(page),
   })
   if (apiTranslations.length > 0) {
@@ -155,30 +200,47 @@ export async function getVerses(
   return { ...data, verses: data.verses.map(sanitizeVerse) }
 }
 
+/** One page with Clear Quran merge + slim wire payload — for progressive loading */
+export const getVersesPage = cache(async (
+  chapterId: number,
+  page: number,
+  translations: number[] = BUNDLE_TRANSLATION_IDS,
+): Promise<{ verses: Verse[]; pagination: PaginationMeta }> => {
+  const wantsKhattab = translations.includes(TRANSLATION_IDS.CLEAR_QURAN)
+
+  const [data, khattab] = await Promise.all([
+    getVerses(chapterId, translations, page),
+    wantsKhattab ? getKhattabChapter(chapterId).catch(() => null) : null,
+  ])
+
+  const verses = khattab
+    ? data.verses.map((v) => mergeKhattab(v, khattab))
+    : data.verses
+
+  return {
+    verses: verses.map(slimVerse),
+    pagination: data.pagination,
+  }
+})
+
 /** All verses for a chapter — handles pagination and Khattab merge */
 export const getAllVerses = cache(async (
   chapterId: number,
   translations: number[] = BUNDLE_TRANSLATION_IDS,
 ): Promise<Verse[]> => {
-  const wantsKhattab = translations.includes(TRANSLATION_IDS.CLEAR_QURAN)
-
-  const [first, khattab] = await Promise.all([
-    getVerses(chapterId, translations, 1),
-    wantsKhattab ? getKhattabChapter(chapterId).catch(() => null) : null,
-  ])
+  const first = await getVersesPage(chapterId, 1, translations)
 
   let verses = first.verses
   if (first.pagination.total_pages > 1) {
     const rest = await Promise.all(
       Array.from({ length: first.pagination.total_pages - 1 }, (_, i) =>
-        getVerses(chapterId, translations, i + 2).then((r) => r.verses),
+        getVersesPage(chapterId, i + 2, translations).then((r) => r.verses),
       ),
     )
     verses = [...first.verses, ...rest.flat()]
   }
 
-  if (!khattab) return verses
-  return verses.map((v) => mergeKhattab(v, khattab))
+  return verses
 })
 
 /** Single verse by key e.g. "2:255" */

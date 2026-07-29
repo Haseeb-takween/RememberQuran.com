@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
-import { getChapter, getAllVerses } from "@/lib/quranApi"
-import { SurahHydrate } from "@/components/reader/SurahHydrate"
+import { getChapter } from "@/lib/quranApi"
+import { SurahBootstrap } from "@/components/reader/SurahBootstrap"
 
 interface Props {
   params: Promise<{ surahId: string; ayahId: string }>
@@ -38,16 +38,11 @@ export default async function AyahPage({ params }: Props) {
 
   if (isNaN(id) || id < 1 || id > 114) notFound()
 
-  const [chapter, verses] = await Promise.all([
-    getChapter(id),
-    getAllVerses(id),
-  ])
-
+  const chapter = await getChapter(id)
   if (!chapter) notFound()
 
-  const validAyah = !isNaN(ayah) && ayah >= 1 && ayah <= chapter.verses_count ? ayah : undefined
+  const validAyah =
+    !isNaN(ayah) && ayah >= 1 && ayah <= chapter.verses_count ? ayah : undefined
 
-  return (
-    <SurahHydrate chapter={chapter} verses={verses} targetAyahId={validAyah} />
-  )
+  return <SurahBootstrap chapter={chapter} targetAyahId={validAyah} />
 }

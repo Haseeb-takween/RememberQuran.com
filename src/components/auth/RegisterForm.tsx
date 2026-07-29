@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { validateCredentials } from "@/lib/auth/credentials"
+import { navigateAfterAuth } from "@/lib/auth/navigate-after-auth"
 import { safeNextPath } from "@/lib/auth/safe-next"
 import { cn } from "@/lib/utils"
 
@@ -84,8 +85,8 @@ export function RegisterForm() {
         return
       }
 
-      // Full navigation so the session cookie is picked up and we leave /register
-      window.location.assign(next)
+      // Soft App Router nav — keeps providers mounted; refresh picks up session.
+      await navigateAfterAuth(router, next)
     } catch (err) {
       const aborted =
         err instanceof DOMException && err.name === "AbortError"

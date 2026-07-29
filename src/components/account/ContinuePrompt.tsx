@@ -156,7 +156,11 @@ export function ContinuePrompt({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <Button render={<Link href={href} />} size="sm">
+          <Button
+            nativeButton={false}
+            render={<Link href={href} />}
+            size="sm"
+          >
             Continue
             <ArrowRight data-icon="inline-end" />
           </Button>

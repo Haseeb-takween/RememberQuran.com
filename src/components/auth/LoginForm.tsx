@@ -2,24 +2,20 @@
 
 import Link from "next/link"
 import { useState, type FormEvent } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { validateCredentials } from "@/lib/auth/credentials"
+import { navigateAfterAuth } from "@/lib/auth/navigate-after-auth"
 import { safeNextPath } from "@/lib/auth/safe-next"
 import { cn } from "@/lib/utils"
 
 const fieldLabel =
   "mb-1.5 block text-xs font-medium tracking-wide text-muted-foreground"
 
-function redirectAfterAuth(path: string) {
-  // Full navigation guarantees the fresh Auth.js cookie is read by the server
-  // and avoids staying on /login or /register with only the navbar updated.
-  window.location.assign(path)
-}
-
 export function LoginForm() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const next = safeNextPath(searchParams.get("next"), "/account")
 
@@ -56,8 +52,9 @@ export function LoginForm() {
         return
       }
 
-      // Leave `pending` on while the full-page redirect happens.
-      redirectAfterAuth(next)
+      // Soft nav + refresh so the session cookie is picked up without
+      // remounting the whole app shell (providers, chapters, audio).
+      await navigateAfterAuth(router, next)
     } catch {
       setError("Something went wrong. Please try again.")
       setPassword("")

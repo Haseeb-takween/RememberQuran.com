@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 import {
   ChevronDown,
@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { navigateAfterAuth } from "@/lib/auth/navigate-after-auth"
 import { cn } from "@/lib/utils"
 
 const FOCUS =
@@ -29,6 +30,7 @@ const navLink =
   "flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs text-muted-foreground transition-colors duration-[120ms] hover:bg-accent hover:text-foreground"
 
 export function AuthNav() {
+  const router = useRouter()
   const { data: session, status } = useSession()
   const pathname = usePathname()
 
@@ -55,6 +57,11 @@ export function AuthNav() {
     session.user.email?.split("@")[0] ||
     "Account"
 
+  async function handleSignOut() {
+    await signOut({ redirect: false })
+    await navigateAfterAuth(router, "/")
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -80,21 +87,18 @@ export function AuthNav() {
             <span className="truncate text-sm text-foreground">{label}</span>
             <span className="truncate font-normal">{session.user.email}</span>
           </DropdownMenuLabel>
-          <DropdownMenuItem render={<Link href="/account" />}>
+          <DropdownMenuItem onClick={() => router.push("/account")}>
             <LayoutGrid />
             Account overview
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href="/account/settings" />}>
+          <DropdownMenuItem onClick={() => router.push("/account/settings")}>
             <Settings2 />
             Settings
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => signOut({ callbackUrl: "/" })}
-          >
+          <DropdownMenuItem variant="destructive" onClick={() => void handleSignOut()}>
             <LogOut />
             Sign out
           </DropdownMenuItem>
