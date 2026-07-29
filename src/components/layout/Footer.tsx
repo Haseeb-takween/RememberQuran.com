@@ -1,56 +1,67 @@
 import Link from "next/link"
-import { auth } from "@/auth"
 import { LogoWordmark } from "@/components/layout/Logo"
+import { FooterAccountLinks } from "@/components/layout/FooterAccountLinks"
 
 const YEAR = new Date().getFullYear()
 
-export async function Footer() {
-  const session = await auth()
-  const signedIn = Boolean(session?.user?.id)
+const LINK_CLASS =
+  "rounded-sm text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 
-  const footerLinks = [
-    {
-      heading: "Quran",
-      links: [
-        { label: "Al-Fatihah", href: "/1" },
-        { label: "Al-Baqarah", href: "/2" },
-        { label: "Yasin", href: "/36" },
-        { label: "Al-Mulk", href: "/67" },
-        { label: "Al-Kahf", href: "/18" },
-      ],
-    },
-    {
-      heading: "Explore",
-      links: [
-        { label: "All Surahs", href: "/" },
-        { label: "Search", href: "/search" },
-        { label: "Listen", href: "/radio" },
-        { label: "Create", href: "/media-maker" },
-      ],
-    },
-    {
-      heading: "Account",
-      links: signedIn
-        ? [
-            { label: "Overview", href: "/account" },
-            { label: "Bookmarks", href: "/account/bookmarks" },
-            { label: "Settings", href: "/account/settings" },
-          ]
-        : [
-            { label: "Sign in", href: "/login" },
-            { label: "Register", href: "/register" },
-            { label: "Bookmarks", href: "/account/bookmarks" },
-          ],
-    },
-    {
-      heading: "Legal",
-      links: [
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Terms of Service", href: "/terms" },
-      ],
-    },
-  ]
+const FOOTER_COLUMNS = [
+  {
+    heading: "Quran",
+    links: [
+      { label: "Al-Fatihah", href: "/1" },
+      { label: "Al-Baqarah", href: "/2" },
+      { label: "Yasin", href: "/36" },
+      { label: "Al-Mulk", href: "/67" },
+      { label: "Al-Kahf", href: "/18" },
+    ],
+  },
+  {
+    heading: "Explore",
+    links: [
+      { label: "All Surahs", href: "/" },
+      { label: "Search", href: "/search" },
+      { label: "Listen", href: "/radio" },
+      { label: "Create", href: "/media-maker" },
+    ],
+  },
+  {
+    heading: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
+  },
+] as const
 
+function FooterLinkColumn({
+  heading,
+  links,
+}: {
+  heading: string
+  links: readonly { label: string; href: string }[]
+}) {
+  return (
+    <div>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        {heading}
+      </h3>
+      <ul className="flex flex-col gap-2">
+        {links.map(({ label, href }) => (
+          <li key={href}>
+            <Link href={href} className={LINK_CLASS}>
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function Footer() {
   return (
     <footer className="relative mt-16 border-t border-border bg-muted/30">
       {/* Gold hairline — a thread of manuscript gilding across the top edge */}
@@ -84,25 +95,17 @@ export async function Footer() {
             </p>
           </div>
 
-          {footerLinks.map(({ heading, links }) => (
-            <div key={heading}>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                {heading}
-              </h3>
-              <ul className="flex flex-col gap-2">
-                {links.map(({ label, href }) => (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className="rounded-sm text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <FooterLinkColumn {...FOOTER_COLUMNS[0]} />
+          <FooterLinkColumn {...FOOTER_COLUMNS[1]} />
+
+          <div>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Account
+            </h3>
+            <FooterAccountLinks />
+          </div>
+
+          <FooterLinkColumn {...FOOTER_COLUMNS[2]} />
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 sm:flex-row sm:items-center">
