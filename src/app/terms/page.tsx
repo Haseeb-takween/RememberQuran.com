@@ -17,7 +17,9 @@ export default function TermsPage() {
         <p>
           These Terms of Service (“Terms”) govern your use of{" "}
           <strong>RememberQuran</strong> at{" "}
-          <Link href="/">{SITE}</Link>{" "}
+          <a href={SITE} rel="noopener noreferrer">
+            {SITE}
+          </a>{" "}
           and related pages (the “Service”). By using the Service, you agree to
           these Terms. If you do not agree, do not use the Service.
         </p>
@@ -183,7 +185,7 @@ export default function TermsPage() {
       <LegalSection title="15. Contact">
         <p>
           Questions about these Terms:{" "}
-          <Link href={`mailto:${CONTACT}`}>{CONTACT}</Link>
+          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
         </p>
         <p>
           Also see our{" "}
